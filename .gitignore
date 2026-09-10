@@ -46,7 +46,7 @@ data/external/
 *.pickle
 
 # --- Model Artifacts ---
-models/
+/models/
 *.pt
 *.pth
 *.onnx
