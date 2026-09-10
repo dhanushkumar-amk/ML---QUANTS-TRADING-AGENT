@@ -1,8 +1,10 @@
 # ML + Quants Trading Agent 🤖📈
 
+[![CI Pipeline](https://github.com/dhanushkumar-amk/ML---QUANTS-TRADING-AGENT/actions/workflows/ci.yml/badge.svg)](https://github.com/dhanushkumar-amk/ML---QUANTS-TRADING-AGENT/actions/workflows/ci.yml)
+
 An end-to-end quantitative trading system combining classical financial engineering (GARCH, mean-reversion, momentum) with modern ML/DL/NLP models. The agent ingests market data, engineers predictive features, trains and evaluates multiple model families (gradient boosting, deep learning, transformer-based NLP for sentiment), back-tests strategies with realistic transaction costs, and executes paper/live trades via the Alpaca API — all orchestrated through a Streamlit dashboard.
 
-> **Status:** Phase 1 of 50 — environment & repository skeleton complete.
+> **Status:** Phase 3.5 of 50 — Environment, multi-source historical pipeline, real-time streaming, and CI/CD testing complete.
 
 ---
 
@@ -58,6 +60,27 @@ cp .env.example .env
 
 # 5. Run the dashboard (coming in later phases)
 streamlit run dashboard/app.py
+```
+
+---
+
+## Testing & Continuous Integration (CI)
+
+Continuous Integration runs automatically via GitHub Actions on every push and pull request to `master` / `main` across Python 3.10 and 3.11.
+
+All unit tests use mock fixtures (`unittest.mock`) for external APIs (Yahoo Finance, Hugging Face Hub, Alpaca WebSocket) — **no secrets or API keys are required for tests or CI to pass**.
+
+To run tests and code quality checks locally:
+
+```bash
+# Run the full test suite with coverage report (threshold >= 70%)
+pytest --cov=src --cov-report=term-missing
+
+# Run Ruff linter
+ruff check src tests scripts
+
+# Run Black formatting check
+black --check src tests scripts
 ```
 
 ---
