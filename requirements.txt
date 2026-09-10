@@ -13,6 +13,10 @@ statsmodels>=0.14,<1
 # --- Market Data ---
 yfinance>=0.2,<1
 
+# --- Hugging Face Datasets (Phase 2) ---
+datasets>=2.20,<3
+pyarrow>=16.0,<18
+
 # --- ML / Boosting ---
 scikit-learn>=1.5,<2
 xgboost>=2.1,<3
