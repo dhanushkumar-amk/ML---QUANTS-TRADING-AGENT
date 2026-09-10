@@ -23,6 +23,22 @@ data:
   interval: "1d"            # 1m, 5m, 15m, 1h, 1d, 1wk
   source: "yfinance"
 
+streaming:
+  source: "alpaca"          # alpaca | polling
+  feed: "iex"               # iex (free tier) | sip (paid)
+  tickers:
+    - AAPL
+    - MSFT
+    - SPY
+  subscribe_to:
+    - bars
+    - trades
+  interval: "1m"            # for polling fallback: 1m, 5m
+  poll_frequency_sec: 10    # seconds between poll requests in polling mode
+  flush_interval_sec: 30    # seconds between automatic Parquet flushes
+  stale_threshold_sec: 60   # seconds without ticks before warning
+  on_market_closed: "poll_recent" # wait | exit | poll_recent
+
 features:
   technical_indicators:
     - SMA_20
