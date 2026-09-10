@@ -4,7 +4,7 @@
 
 import asyncio
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -100,7 +100,9 @@ def test_alpaca_handle_trade_and_quote(monkeypatch, tmp_path: Path):
     asyncio.run(streamer._handle_trade(trade))
     assert streamer._trades_received == 1
 
-    quote = MagicMock(symbol="AAPL", timestamp="2026-09-10T10:32:01Z", bid_price=150.9, ask_price=151.1)
+    quote = MagicMock(
+        symbol="AAPL", timestamp="2026-09-10T10:32:01Z", bid_price=150.9, ask_price=151.1
+    )
     asyncio.run(streamer._handle_quote(quote))
     assert streamer._quotes_received == 1
 

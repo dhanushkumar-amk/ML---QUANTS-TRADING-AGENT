@@ -30,7 +30,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.data_pipeline.alpaca_stream import AlpacaStreamer
 from src.data_pipeline.market_hours import (
-    is_market_open,
     is_market_open_alpaca,
     market_status,
     wait_for_market_open,
@@ -130,7 +129,11 @@ def main() -> int:
     print("=" * 65)
     print(f"  Source          : {source.upper()}")
     print(f"  Tickers         : {', '.join(tickers)}")
-    print(f"  Duration        : {args.duration}s" if args.duration else "  Duration        : Indefinite (Ctrl+C to stop)")
+    print(
+        f"  Duration        : {args.duration}s"
+        if args.duration
+        else "  Duration        : Indefinite (Ctrl+C to stop)"
+    )
     print(f"  Flush Interval  : Every {flush_interval}s")
     print(f"  Stale Threshold : {stale_thresh}s")
     print("=" * 65 + "\n")

@@ -70,11 +70,11 @@ class RealtimeBuffer:
         self._buffers: dict[str, deque[dict[str, Any]]] = {
             t: deque(maxlen=max_buffer_size) for t in tickers
         }
-        self._tick_counts: dict[str, int] = {t: 0 for t in tickers}
-        self._report_counts: dict[str, int] = {t: 0 for t in tickers}
-        self._last_received: dict[str, float] = {t: 0.0 for t in tickers}
+        self._tick_counts: dict[str, int] = dict.fromkeys(tickers, 0)
+        self._report_counts: dict[str, int] = dict.fromkeys(tickers, 0)
+        self._last_received: dict[str, float] = dict.fromkeys(tickers, 0.0)
         self._last_flush: float = time.time()
-        self._total_flushed: dict[str, int] = {t: 0 for t in tickers}
+        self._total_flushed: dict[str, int] = dict.fromkeys(tickers, 0)
 
         # Load existing timestamps for de-duplication
         self._existing_max_ts: dict[str, pd.Timestamp | None] = {}
@@ -95,7 +95,8 @@ class RealtimeBuffer:
                         self._existing_max_ts[ticker] = max_ts
                         logger.info(
                             "Buffer: %s existing data up to %s -- will skip older bars.",
-                            ticker, max_ts,
+                            ticker,
+                            max_ts,
                         )
                         continue
                 except Exception as exc:
@@ -184,7 +185,10 @@ class RealtimeBuffer:
             self._total_flushed[ticker] = self._total_flushed.get(ticker, 0) + flushed_count
             logger.info(
                 "Flushed %d bars for %s -> %s (total on disk: %d)",
-                flushed_count, ticker, filepath, len(combined),
+                flushed_count,
+                ticker,
+                filepath,
+                len(combined),
             )
         except Exception as exc:
             logger.error("Failed to flush %s: %s — data kept in memory.", ticker, exc)
@@ -215,7 +219,8 @@ class RealtimeBuffer:
                 status = f"[STALE ({elapsed:.0f}s ago)]"
                 logger.warning(
                     "%s: no data for %.0f seconds — possible feed issue!",
-                    ticker, elapsed,
+                    ticker,
+                    elapsed,
                 )
 
             lines.append(

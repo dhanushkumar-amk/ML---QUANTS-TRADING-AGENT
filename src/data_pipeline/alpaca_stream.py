@@ -22,10 +22,9 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 import threading
 import time
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 
@@ -197,7 +196,6 @@ class AlpacaStreamer:
         duration : int | None
             Maximum duration in seconds to run. If None, runs indefinitely.
         """
-        start_time = time.time()
         retries = 0
 
         logger.info(
@@ -210,6 +208,7 @@ class AlpacaStreamer:
 
         # Background duration watcher thread if duration is specified
         if duration is not None:
+
             def _duration_timer():
                 time.sleep(duration)
                 logger.info("Duration limit of %ds reached -- stopping Alpaca stream.", duration)

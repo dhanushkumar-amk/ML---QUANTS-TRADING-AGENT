@@ -8,9 +8,7 @@ import pandas as pd
 import pytest
 
 from src.data_pipeline.storage import (
-    get_file_metadata,
     load_dataframe,
-    load_metadata,
     save_dataframe,
 )
 from src.data_pipeline.validators import (
@@ -37,27 +35,27 @@ def sample_df() -> pd.DataFrame:
 
 def test_storage_save_and_load(tmp_path: Path, sample_df: pd.DataFrame):
     """Test saving dataframe as parquet and reloading it."""
-    out_dir = tmp_path / "raw"
     saved_path = save_dataframe(
         sample_df,
+        source="test_source",
         name="test_ticker",
-        data_type="raw",
-        source="unit_test",
-        root_dir=tmp_path,
+        raw_dir=tmp_path,
     )
     assert saved_path.exists()
     assert saved_path.suffix == ".parquet"
 
     # Reload
-    loaded_df = load_dataframe(saved_path)
+    loaded_df = load_dataframe(
+        source="test_source",
+        name="test_ticker",
+        raw_dir=tmp_path,
+    )
     assert len(loaded_df) == len(sample_df)
     assert "close" in loaded_df.columns
 
-    # Check manifest metadata
-    meta = load_metadata(tmp_path / "raw")
-    assert len(meta) >= 1
-    assert meta[0]["name"] == "test_ticker"
-    assert meta[0]["rows"] == 5
+    # Test load non-existent
+    with pytest.raises(FileNotFoundError):
+        load_dataframe("test_source", "non_existent", raw_dir=tmp_path)
 
 
 def test_validators_detect_duplicate_timestamps(sample_df: pd.DataFrame):
@@ -89,10 +87,10 @@ def test_build_and_print_summary(sample_df: pd.DataFrame, capsys):
     results = {"AAPL": sample_df, "MSFT": sample_df}
     summary_df = build_summary_table(results, source="test_source")
     assert len(summary_df) == 2
-    assert "ticker" in summary_df.columns
+    assert "name" in summary_df.columns
     assert "rows" in summary_df.columns
 
     # Test print_summary does not raise
-    print_summary(results, source="test_source")
+    print_summary(summary_df, title="Test Ingestion Summary")
     captured = capsys.readouterr()
-    assert "Data Ingestion Summary" in captured.out
+    assert "Test Ingestion Summary" in captured.out

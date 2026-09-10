@@ -36,13 +36,13 @@ MARKET_CLOSE = datetime.time(16, 0)
 # Major US market holidays (static list — extend yearly as needed).
 # Dates where NYSE is fully closed.
 _HOLIDAYS_2026 = {
-    datetime.date(2026, 1, 1),    # New Year's Day
-    datetime.date(2026, 1, 19),   # MLK Day
-    datetime.date(2026, 2, 16),   # Presidents' Day
-    datetime.date(2026, 4, 3),    # Good Friday
-    datetime.date(2026, 5, 25),   # Memorial Day
-    datetime.date(2026, 7, 3),    # Independence Day (observed)
-    datetime.date(2026, 9, 7),    # Labor Day
+    datetime.date(2026, 1, 1),  # New Year's Day
+    datetime.date(2026, 1, 19),  # MLK Day
+    datetime.date(2026, 2, 16),  # Presidents' Day
+    datetime.date(2026, 4, 3),  # Good Friday
+    datetime.date(2026, 5, 25),  # Memorial Day
+    datetime.date(2026, 7, 3),  # Independence Day (observed)
+    datetime.date(2026, 9, 7),  # Labor Day
     datetime.date(2026, 11, 26),  # Thanksgiving
     datetime.date(2026, 12, 25),  # Christmas
 }
@@ -105,6 +105,7 @@ def is_market_open_alpaca() -> bool:
     """
     try:
         from alpaca.trading.client import TradingClient
+
         from src.utils.config_loader import get_env
 
         api_key = get_env("ALPACA_API_KEY", "")

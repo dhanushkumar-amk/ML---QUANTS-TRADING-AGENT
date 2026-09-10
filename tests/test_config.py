@@ -2,7 +2,6 @@
 # Unit Tests — Configuration Loader (Phase 1)
 # ============================================================
 
-import os
 from pathlib import Path
 
 import pytest

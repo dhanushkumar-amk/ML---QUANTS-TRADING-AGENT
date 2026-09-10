@@ -55,6 +55,5 @@ class AlphaVantageLoader:
     ) -> dict[str, pd.DataFrame]:
         """Batch fetch — delegates to ``fetch`` per ticker."""
         raise NotImplementedError(
-            "AlphaVantageLoader.fetch_batch() is a stub. "
-            "Implement in a future phase."
+            "AlphaVantageLoader.fetch_batch() is a stub. " "Implement in a future phase."
         )

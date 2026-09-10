@@ -7,7 +7,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-import pytest
 
 from src.data_pipeline.huggingface_loader import DATASET_CATALOGUE, HuggingFaceLoader
 

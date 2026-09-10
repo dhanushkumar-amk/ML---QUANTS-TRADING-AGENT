@@ -18,10 +18,7 @@ import logging
 import os
 import sys
 
-
-_LOG_FORMAT = (
-    "%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d — %(message)s"
-)
+_LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d — %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # Allow override via env var (set in .env or shell)

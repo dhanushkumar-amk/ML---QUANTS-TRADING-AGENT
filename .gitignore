@@ -58,6 +58,13 @@ checkpoints/
 logs/
 *.log
 
+# --- Testing & Coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
 # --- OS ---
 .DS_Store
 Thumbs.db

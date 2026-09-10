@@ -48,9 +48,7 @@ class YFinanceLoader:
         self.end: str = data_cfg.get("end_date", "2026-09-01")
         self.interval: str = data_cfg.get("interval", "1d")
         self.retries: int = data_cfg.get("retries", _DEFAULT_RETRIES)
-        self.backoff_base: float = data_cfg.get(
-            "backoff_base", _DEFAULT_BACKOFF_BASE
-        )
+        self.backoff_base: float = data_cfg.get("backoff_base", _DEFAULT_BACKOFF_BASE)
 
     # ---- single ticker -------------------------------------------------
     def fetch(
@@ -73,7 +71,12 @@ class YFinanceLoader:
             try:
                 logger.info(
                     "Fetching %s  [%s → %s, %s]  attempt %d/%d",
-                    ticker, _start, _end, _interval, attempt, self.retries,
+                    ticker,
+                    _start,
+                    _end,
+                    _interval,
+                    attempt,
+                    self.retries,
                 )
                 df: pd.DataFrame = yf.download(
                     ticker,
@@ -86,9 +89,7 @@ class YFinanceLoader:
                 )
 
                 if df.empty:
-                    logger.warning(
-                        "%s returned an empty DataFrame — skipping.", ticker
-                    )
+                    logger.warning("%s returned an empty DataFrame — skipping.", ticker)
                     return None
 
                 # Flatten MultiIndex columns if present (yfinance ≥ 0.2.31)
@@ -117,16 +118,17 @@ class YFinanceLoader:
                 return df
 
             except Exception as exc:
-                wait = self.backoff_base ** attempt
+                wait = self.backoff_base**attempt
                 logger.warning(
                     "%s attempt %d failed (%s). Retrying in %.1fs …",
-                    ticker, attempt, exc, wait,
+                    ticker,
+                    attempt,
+                    exc,
+                    wait,
                 )
                 time.sleep(wait)
 
-        logger.error(
-            "%s — all %d retries exhausted. Returning None.", ticker, self.retries
-        )
+        logger.error("%s — all %d retries exhausted. Returning None.", ticker, self.retries)
         return None
 
     # ---- batch ----------------------------------------------------------
@@ -151,6 +153,7 @@ class YFinanceLoader:
 
         logger.info(
             "Batch complete — %d/%d tickers succeeded.",
-            len(results), len(_tickers),
+            len(results),
+            len(_tickers),
         )
         return results

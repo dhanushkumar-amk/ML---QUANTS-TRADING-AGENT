@@ -47,6 +47,7 @@ def _ensure_dir(path: Path) -> None:
 
 # ---- save --------------------------------------------------------------
 
+
 def save_dataframe(
     df: pd.DataFrame,
     source: str,
@@ -96,6 +97,7 @@ def save_dataframe(
 
 # ---- load ---------------------------------------------------------------
 
+
 def load_dataframe(
     source: str,
     name: str,
@@ -117,6 +119,7 @@ def load_dataframe(
 
 
 # ---- metadata -----------------------------------------------------------
+
 
 def _date_range(df: pd.DataFrame) -> dict[str, str | None]:
     """Extract min/max date if a 'date' column exists."""
@@ -160,9 +163,7 @@ def _append_metadata(
             logger.warning("Corrupt metadata file — resetting.")
 
     manifest.append(entry)
-    _METADATA_PATH.write_text(
-        json.dumps(manifest, indent=2, default=str), encoding="utf-8"
-    )
+    _METADATA_PATH.write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     logger.debug("Metadata updated: %s/%s", source, name)
 
 

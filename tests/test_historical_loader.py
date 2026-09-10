@@ -62,7 +62,13 @@ def test_fetch_success(mock_download, sample_ohlcv_df):
 def test_fetch_multiindex_columns(mock_download):
     """Test handling of MultiIndex columns emitted by some yfinance versions."""
     dates = pd.date_range("2026-09-01", periods=3, freq="D")
-    tuples = [("Open", "AAPL"), ("High", "AAPL"), ("Low", "AAPL"), ("Close", "AAPL"), ("Volume", "AAPL")]
+    tuples = [
+        ("Open", "AAPL"),
+        ("High", "AAPL"),
+        ("Low", "AAPL"),
+        ("Close", "AAPL"),
+        ("Volume", "AAPL"),
+    ]
     index = pd.MultiIndex.from_tuples(tuples)
     mock_df = pd.DataFrame([[150, 155, 149, 152, 50000]] * 3, index=dates, columns=index)
     mock_download.return_value = mock_df

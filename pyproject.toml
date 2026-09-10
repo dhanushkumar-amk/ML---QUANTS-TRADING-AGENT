@@ -49,6 +49,9 @@ ignore = [
     "B008",  # do not perform function calls in argument defaults
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402"]  # allow sys.path manipulation before local package imports
+
 [tool.black]
 line-length = 100
 target-version = ["py310", "py311"]

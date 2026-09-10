@@ -4,10 +4,8 @@
 
 import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import pandas as pd
-import pytest
 
 from src.data_pipeline.market_hours import NYSE_TZ, is_market_open, market_status
 from src.data_pipeline.realtime_buffer import RealtimeBuffer

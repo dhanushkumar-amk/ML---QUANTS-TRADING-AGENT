@@ -68,7 +68,7 @@ DATASET_CATALOGUE: dict[str, dict[str, str | None]] = {
     },
     "financial_phrasebank": {
         "path": "takala/financial_phrasebank",
-        "name": "sentences_allagree",   # 100 % annotator agreement
+        "name": "sentences_allagree",  # 100 % annotator agreement
         "split": "train",
     },
 }
@@ -89,9 +89,7 @@ class HuggingFaceLoader:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Allow config to override the default dataset key
-        self.default_key: str = (
-            (data_cfg or {}).get("hf_dataset", _DEFAULT_DATASET)
-        )
+        self.default_key: str = (data_cfg or {}).get("hf_dataset", _DEFAULT_DATASET)
 
     def fetch(
         self,
@@ -120,15 +118,16 @@ class HuggingFaceLoader:
             split = entry["split"] or "train"
             logger.info(
                 "Loading HF dataset '%s' (hub: %s, subset: %s, split: %s)",
-                key, hub_path, subset, split,
+                key,
+                hub_path,
+                subset,
+                split,
             )
         else:
             hub_path = key
             subset = None
             split = "train"
-            logger.info(
-                "Loading arbitrary HF dataset '%s' (split: %s)", hub_path, split
-            )
+            logger.info("Loading arbitrary HF dataset '%s' (split: %s)", hub_path, split)
 
         try:
             # Lazy import so the rest of the pipeline doesn't break if
@@ -153,7 +152,10 @@ class HuggingFaceLoader:
 
             logger.info(
                 "HF dataset '%s' loaded — %d rows, %d columns. Columns: %s",
-                key, len(df), len(df.columns), list(df.columns),
+                key,
+                len(df),
+                len(df.columns),
+                list(df.columns),
             )
             return df
 

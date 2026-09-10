@@ -3,9 +3,7 @@
 # ============================================================
 """Basic smoke tests for the project setup."""
 
-import os
 from pathlib import Path
-
 
 # ---- Project root detection ----
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

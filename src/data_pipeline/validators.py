@@ -59,9 +59,7 @@ def validate_ohlcv(df: pd.DataFrame, ticker: str = "?") -> list[str]:
     if _VOLUME_COL in df.columns:
         neg_vol = (df[_VOLUME_COL] < 0).sum()
         if neg_vol > 0:
-            issues.append(
-                f"[{ticker}] {neg_vol} negative values in 'volume'."
-            )
+            issues.append(f"[{ticker}] {neg_vol} negative values in 'volume'.")
             logger.warning("%s: %d negative volumes", ticker, neg_vol)
 
     if not issues:

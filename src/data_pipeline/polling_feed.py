@@ -20,7 +20,6 @@ Usage:
 
 from __future__ import annotations
 
-import datetime
 import threading
 import time
 from typing import Any
@@ -127,14 +126,20 @@ class PollingFeed:
             # The timestamp col could be 'Datetime' or 'Date'
             date_col = next((c for c in df.columns if str(c).lower() in ("datetime", "date")), None)
             if not date_col:
-                logger.warning("[%s] Could not identify datetime column in yfinance response.", ticker)
+                logger.warning(
+                    "[%s] Could not identify datetime column in yfinance response.", ticker
+                )
                 return 0
 
             df = df.rename(columns={date_col: "timestamp"})
             df["timestamp"] = pd.to_datetime(df["timestamp"])
 
             # Keep only standard columns
-            keep_cols = [c for c in ["timestamp", "open", "high", "low", "close", "volume"] if c in df.columns]
+            keep_cols = [
+                c
+                for c in ["timestamp", "open", "high", "low", "close", "volume"]
+                if c in df.columns
+            ]
             df = df[keep_cols]
 
             new_bars_added = 0

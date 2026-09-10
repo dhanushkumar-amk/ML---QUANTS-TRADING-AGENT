@@ -32,12 +32,12 @@ _PROJECT_ROOT = _SCRIPT_DIR.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from src.utils.config_loader import load_config
-from src.utils.logger import get_logger
 from src.data_pipeline.historical_loader import YFinanceLoader
 from src.data_pipeline.huggingface_loader import HuggingFaceLoader
 from src.data_pipeline.storage import save_dataframe
 from src.data_pipeline.validators import build_summary_table, print_summary
+from src.utils.config_loader import load_config
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -99,9 +99,7 @@ def fetch_huggingface(cfg: dict) -> None:
         save_dataframe(df, source="huggingface", name=ds_key)
 
         # Build a simple summary (HF datasets may not have date/price cols)
-        summary = build_summary_table(
-            {ds_key: df}, source="huggingface"
-        )
+        summary = build_summary_table({ds_key: df}, source="huggingface")
         print_summary(summary, title="Hugging Face Fetch Summary")
     else:
         logger.error("Hugging Face fetch returned no data.")
