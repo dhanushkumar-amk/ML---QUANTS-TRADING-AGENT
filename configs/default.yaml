@@ -1,0 +1,72 @@
+# ============================================================
+# Default Configuration — ML + Quants Trading Agent
+# ============================================================
+# This file stores non-secret parameters: tickers, date ranges,
+# hyperparameters, feature settings, etc.
+# Secrets (API keys) belong in .env — never in YAML.
+# ============================================================
+
+project:
+  name: "ML + Quants Trading Agent"
+  version: "0.1.0"
+
+data:
+  tickers:
+    - AAPL
+    - MSFT
+    - GOOGL
+    - AMZN
+    - TSLA
+    - SPY
+  start_date: "2018-01-01"
+  end_date: "2026-09-01"
+  interval: "1d"            # 1m, 5m, 15m, 1h, 1d, 1wk
+  source: "yfinance"
+
+features:
+  technical_indicators:
+    - SMA_20
+    - SMA_50
+    - EMA_12
+    - EMA_26
+    - RSI_14
+    - MACD
+    - BBANDS
+    - ATR_14
+  lookback_window: 60       # trading days
+
+models:
+  xgboost:
+    n_estimators: 500
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+  lightgbm:
+    n_estimators: 500
+    max_depth: -1
+    learning_rate: 0.05
+    num_leaves: 31
+  lstm:
+    hidden_size: 128
+    num_layers: 2
+    dropout: 0.2
+    epochs: 50
+    batch_size: 64
+
+optuna:
+  n_trials: 100
+  direction: "maximize"     # maximize Sharpe / accuracy
+  timeout: 3600             # seconds
+
+backtest:
+  initial_cash: 100000
+  commission_pct: 0.001
+  slippage_pct: 0.0005
+
+execution:
+  mode: "paper"             # paper | live
+  max_position_pct: 0.10    # max 10% of portfolio per ticker
+  order_type: "market"
+
+logging:
+  level: "INFO"

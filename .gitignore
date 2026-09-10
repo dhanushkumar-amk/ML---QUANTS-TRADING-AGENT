@@ -1,0 +1,72 @@
+# ============================================================
+# ML + Quants Trading Agent — .gitignore
+# ============================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# --- Virtual Environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Environment / Secrets ---
+.env
+*.env
+!.env.example
+
+# --- Jupyter Notebooks Checkpoints ---
+.ipynb_checkpoints/
+
+# --- Data (large files, raw market data) ---
+data/raw/
+data/processed/
+data/external/
+*.csv
+*.parquet
+*.h5
+*.hdf5
+*.feather
+*.pkl
+*.pickle
+
+# --- Model Artifacts ---
+models/
+*.pt
+*.pth
+*.onnx
+*.joblib
+*.bin
+checkpoints/
+
+# --- Logs ---
+logs/
+*.log
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Streamlit ---
+.streamlit/secrets.toml
+
+# --- Misc ---
+*.bak
+*.tmp
+*.temp
