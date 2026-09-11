@@ -12,6 +12,7 @@ statsmodels>=0.14,<1
 
 # --- Market Data ---
 yfinance>=0.2,<1
+pandas-market-calendars>=5.0,<6
 
 # --- Hugging Face Datasets (Phase 2) ---
 datasets>=2.20,<3

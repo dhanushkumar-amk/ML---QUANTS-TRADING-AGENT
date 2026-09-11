@@ -63,11 +63,33 @@ def _parse_args() -> argparse.Namespace:
         default="configs/default.yaml",
         help="Path to YAML config file (default: configs/default.yaml).",
     )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Run corporate actions adjustment and data cleaning, saving to data/processed.",
+    )
+    parser.add_argument(
+        "--clean-strategy",
+        choices=["flag_only", "forward_fill", "drop"],
+        default="flag_only",
+        help="Remediation strategy for anomalies (default: flag_only).",
+    )
     return parser.parse_args()
 
 
-def fetch_yfinance(cfg: dict, tickers_override: list[str] | None) -> None:
-    """Fetch OHLCV data via yfinance, save to Parquet, print summary."""
+_PROCESSED_DIR = _PROJECT_ROOT / "data" / "processed"
+
+
+def fetch_yfinance(
+    cfg: dict,
+    tickers_override: list[str] | None,
+    clean: bool = False,
+    clean_strategy: str = "flag_only",
+) -> None:
+    """Fetch OHLCV data via yfinance, save to Parquet, and optionally clean."""
+    from src.data_pipeline.corporate_actions import CorporateActionsAdjuster
+    from src.data_pipeline.data_cleaner import DataCleaner
+
     data_cfg = cfg["data"]
     loader = YFinanceLoader(data_cfg)
 
@@ -76,13 +98,40 @@ def fetch_yfinance(cfg: dict, tickers_override: list[str] | None) -> None:
 
     results = loader.fetch_batch(tickers=tickers)
 
-    # Save each ticker
+    # 1. Save raw data (immutable source of truth)
     for ticker, df in results.items():
         save_dataframe(df, source="yfinance", name=ticker)
 
-    # Summary
+    # Summary of raw fetch
     summary = build_summary_table(results, source="yfinance")
-    print_summary(summary, title="yfinance Fetch Summary")
+    print_summary(summary, title="yfinance Raw Ingestion Summary")
+
+    # 2. Optionally clean and adjust corporate actions
+    if clean:
+        print("\n" + "=" * 65)
+        print(f"  RUNNING DATA CLEANING PIPELINE (strategy={clean_strategy})")
+        print("=" * 65)
+
+        adjuster = CorporateActionsAdjuster()
+        cleaner = DataCleaner(strategy=clean_strategy)
+
+        for ticker, df in results.items():
+            # A. Corporate Actions (Splits & Dividends)
+            splits = adjuster.detect_splits(df, ticker=ticker)
+            adjusted_df = adjuster.adjust_for_splits(df, splits)
+
+            # B. Data Cleaning (Duplicates, Gaps, Outliers)
+            cleaned_df, report = cleaner.clean(adjusted_df, ticker=ticker)
+            print(report.summary_table())
+
+            # C. Save cleaned data to /data/processed
+            processed_path = save_dataframe(
+                cleaned_df,
+                source="yfinance",
+                name=ticker,
+                raw_dir=_PROCESSED_DIR,
+            )
+            print(f"  --> Cleaned dataset saved to: {processed_path}\n")
 
 
 def fetch_huggingface(cfg: dict) -> None:
@@ -110,12 +159,17 @@ def main() -> None:
     cfg = load_config(args.config)
 
     if args.source in ("yfinance", "all"):
-        fetch_yfinance(cfg, args.tickers)
+        fetch_yfinance(
+            cfg,
+            args.tickers,
+            clean=args.clean,
+            clean_strategy=args.clean_strategy,
+        )
 
     if args.source in ("huggingface", "all"):
         fetch_huggingface(cfg)
 
-    logger.info("✅ Data fetch complete.")
+    logger.info("Data fetch complete.")
 
 
 if __name__ == "__main__":
