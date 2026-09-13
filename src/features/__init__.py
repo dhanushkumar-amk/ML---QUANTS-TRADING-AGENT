@@ -75,6 +75,16 @@ from src.features.volatility_analysis import (
     ljung_box_test,
     volatility_clustering_report,
 )
+from src.features.volatility_models import (
+    GARCHModelResult,
+    GARCHVolatilityFeatureExtractor,
+    fit_egarch,
+    fit_garch,
+    fit_gjr_garch,
+    forecast_volatility,
+    rolling_garch_features,
+    select_best_volatility_model,
+)
 
 __all__ = [
     # Feature framework & registry
@@ -132,6 +142,15 @@ __all__ = [
     "arch_lm_test",
     "volatility_clustering_report",
     "batch_volatility_clustering",
+    # Volatility models (GARCH)
+    "GARCHModelResult",
+    "fit_garch",
+    "fit_gjr_garch",
+    "fit_egarch",
+    "select_best_volatility_model",
+    "forecast_volatility",
+    "rolling_garch_features",
+    "GARCHVolatilityFeatureExtractor",
     # Autocorrelation & momentum diagnostics
     "AutocorrelationReport",
     "LjungBoxRawResult",
