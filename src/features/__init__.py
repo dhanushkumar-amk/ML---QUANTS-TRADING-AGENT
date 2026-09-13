@@ -14,6 +14,7 @@ from src.features.autocorrelation_diagnostics import (
     run_length_analysis,
     variance_ratio_test,
 )
+from src.features.base import FeatureBase
 from src.features.eda_utils import (
     compute_daily_returns,
     plot_acf_squared_returns,
@@ -24,6 +25,22 @@ from src.features.eda_utils import (
     plot_seasonality,
     plot_volatility_regimes,
     summary_stats_table,
+)
+from src.features.feature_registry import (
+    FeatureMetadata,
+    FeatureRegistry,
+    feature_registry,
+    register_feature,
+)
+from src.features.momentum_features import (
+    MomentumFeatureExtractor,
+    compute_cross_sectional_momentum,
+    compute_jegadeesh_titman_momentum,
+    compute_ma_crossover,
+    compute_macd,
+    compute_price_momentum,
+    compute_rate_of_change,
+    compute_rsi,
 )
 from src.features.stationarity import (
     ADFResult,
@@ -48,6 +65,21 @@ from src.features.volatility_analysis import (
 )
 
 __all__ = [
+    # Feature framework & registry
+    "FeatureBase",
+    "FeatureMetadata",
+    "FeatureRegistry",
+    "feature_registry",
+    "register_feature",
+    # Momentum features
+    "compute_price_momentum",
+    "compute_jegadeesh_titman_momentum",
+    "compute_rate_of_change",
+    "compute_ma_crossover",
+    "compute_rsi",
+    "compute_macd",
+    "compute_cross_sectional_momentum",
+    "MomentumFeatureExtractor",
     # EDA utilities
     "compute_daily_returns",
     "summary_stats_table",

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(python --version)",
+      "Shell(python -c import pandas, numpy, matplotlib; print(pandas.__version__, numpy.__version__, matplotlib.__version__))",
+      "Shell(dir:*)",
+      "Shell(dir /b *.cfg .venv venv 2>nul & where python & py -0p)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
