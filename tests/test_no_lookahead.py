@@ -27,6 +27,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from src.features.feature_scaling import (
+    FeaturePipeline,
+)
 from src.features.mean_reversion_features import (
     MeanReversionFeatureExtractor,
     compute_bollinger_bands,
@@ -48,6 +51,9 @@ from src.features.momentum_features import (
     compute_price_momentum,
     compute_rate_of_change,
     compute_rsi,
+)
+from src.features.regime_detection import (
+    RegimeFeatureExtractor,
 )
 from src.features.volume_features import (
     VolumeFeatureExtractor,
@@ -618,4 +624,67 @@ def test_no_lookahead_microstructure_extractor_truncation(synthetic_ohlcv_series
             atol=1e-12,
             equal_nan=True,
             err_msg=f"Truncation invariance failed for {col} in MicrostructureProxyFeatureExtractor!",
+        )
+
+
+def test_no_lookahead_rolling_regime_features(synthetic_ohlcv_series: pd.DataFrame):
+    """Verify rolling regime features at time T are strictly invariant to future price perturbations."""
+    df_base = synthetic_ohlcv_series.copy()
+    cutoff_idx = 100
+
+    # Baseline features
+    extractor = RegimeFeatureExtractor(window=70, refit_frequency=20, n_regimes=2)
+    feat_base = extractor.compute(df_base)
+
+    # Severe future price shock
+    df_corrupted = df_base.copy()
+    df_corrupted.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("close")] *= 50.0
+
+    feat_corrupted = extractor.compute(df_corrupted)
+
+    for col in feat_base.columns:
+        s_base = feat_base[col].iloc[: cutoff_idx + 1]
+        s_corr = feat_corrupted[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_corr.values,
+            rtol=1e-8,
+            atol=1e-8,
+            equal_nan=True,
+            err_msg=f"Lookahead detected in rolling regime feature '{col}'!",
+        )
+
+
+def test_no_lookahead_feature_pipeline_scaling(synthetic_ohlcv_series: pd.DataFrame):
+    """Verify FeaturePipeline fit/transform strictly respects cutoff T (No Leakage)."""
+    df = synthetic_ohlcv_series.copy()
+    cutoff_idx = 90
+
+    # Train slice
+    df_train = df.iloc[: cutoff_idx + 1].copy()
+
+    pipeline = FeaturePipeline(
+        feature_names=["rsi_14", "volume_zscore_20"],
+        scaler_method="robust",
+        drop_warmup=True,
+    )
+    pipeline.fit(df_train)
+
+    # Transform on train slice
+    x_train_1 = pipeline.transform(df_train)
+
+    # Severe future corruption on future slice (t > cutoff_idx)
+    df_corrupted_future = df.copy()
+    df_corrupted_future.iloc[cutoff_idx + 1 :, df.columns.get_loc("close")] *= 1000.0
+
+    # Transforming train slice must remain completely identical
+    x_train_2 = pipeline.transform(df_train)
+
+    for col in x_train_1.columns:
+        np.testing.assert_allclose(
+            x_train_1[col].values,
+            x_train_2[col].values,
+            rtol=1e-12,
+            atol=1e-12,
+            err_msg=f"Pipeline transform leaked future data for '{col}'!",
         )

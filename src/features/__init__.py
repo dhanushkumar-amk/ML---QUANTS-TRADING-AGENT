@@ -32,6 +32,11 @@ from src.features.feature_registry import (
     feature_registry,
     register_feature,
 )
+from src.features.feature_scaling import (
+    CrossSectionalScaler,
+    FeaturePipeline,
+    TimeSeriesScaler,
+)
 from src.features.mean_reversion_features import (
     MeanReversionFeatureExtractor,
     compute_atr,
@@ -61,6 +66,13 @@ from src.features.momentum_features import (
     compute_price_momentum,
     compute_rate_of_change,
     compute_rsi,
+)
+from src.features.regime_detection import (
+    RegimeFeatureExtractor,
+    RegimeModelResult,
+    fit_gmm_regimes,
+    fit_hmm_regimes,
+    rolling_regime_features,
 )
 from src.features.stationarity import (
     ADFResult,
@@ -197,4 +209,14 @@ __all__ = [
     "autocorrelation_report",
     "multi_horizon_autocorrelation_analysis",
     "multi_asset_autocorrelation_summary",
+    # Regime detection
+    "RegimeModelResult",
+    "fit_hmm_regimes",
+    "fit_gmm_regimes",
+    "rolling_regime_features",
+    "RegimeFeatureExtractor",
+    # Feature scaling & pipeline
+    "TimeSeriesScaler",
+    "CrossSectionalScaler",
+    "FeaturePipeline",
 ]
