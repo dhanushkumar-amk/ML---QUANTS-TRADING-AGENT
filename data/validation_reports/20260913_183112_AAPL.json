@@ -1,0 +1,25 @@
+{
+  "ticker": "AAPL",
+  "timestamp": "2026-09-13T18:31:12.118678+00:00",
+  "total_rows": 10,
+  "is_valid": false,
+  "passed": false,
+  "total_rules": 1,
+  "passed_rules": 0,
+  "failed_rules": 1,
+  "critical_failures": 1,
+  "critical_count": 1,
+  "warning_count": 0,
+  "warnings": 0,
+  "info_count": 0,
+  "results": [
+    {
+      "rule_name": "mock_failing",
+      "passed": false,
+      "severity": "critical",
+      "affected_rows": 10,
+      "message": "Rule crashed during execution: MockFailingRule.validate() got an unexpected keyword argument 'context'",
+      "details": {}
+    }
+  ]
+}

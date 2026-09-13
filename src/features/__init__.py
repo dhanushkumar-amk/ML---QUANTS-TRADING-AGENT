@@ -44,6 +44,14 @@ from src.features.mean_reversion_features import (
     compute_true_range,
     estimate_half_life,
 )
+from src.features.microstructure_proxies import (
+    MicrostructureProxyFeatureExtractor,
+    compute_corwin_schultz_spread,
+    compute_garman_klass_volatility,
+    compute_parkinson_volatility,
+    compute_roll_spread,
+    compute_vpin_proxy,
+)
 from src.features.momentum_features import (
     MomentumFeatureExtractor,
     compute_cross_sectional_momentum,
@@ -85,6 +93,16 @@ from src.features.volatility_models import (
     rolling_garch_features,
     select_best_volatility_model,
 )
+from src.features.volume_features import (
+    VolumeFeatureExtractor,
+    compute_adl,
+    compute_amihud_illiquidity,
+    compute_cmf,
+    compute_obv,
+    compute_volume_roc,
+    compute_volume_zscore,
+    compute_vwap,
+)
 
 __all__ = [
     # Feature framework & registry
@@ -113,6 +131,22 @@ __all__ = [
     "compute_rolling_half_life",
     "compute_stochastic_oscillator",
     "MeanReversionFeatureExtractor",
+    # Volume features
+    "compute_obv",
+    "compute_vwap",
+    "compute_adl",
+    "compute_cmf",
+    "compute_volume_roc",
+    "compute_volume_zscore",
+    "compute_amihud_illiquidity",
+    "VolumeFeatureExtractor",
+    # Microstructure proxies
+    "compute_corwin_schultz_spread",
+    "compute_roll_spread",
+    "compute_vpin_proxy",
+    "compute_garman_klass_volatility",
+    "compute_parkinson_volatility",
+    "MicrostructureProxyFeatureExtractor",
     # EDA utilities
     "compute_daily_returns",
     "summary_stats_table",

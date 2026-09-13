@@ -36,6 +36,9 @@ from src.features.mean_reversion_features import (
     compute_rsi_reversion,
     compute_stochastic_oscillator,
 )
+from src.features.microstructure_proxies import (
+    MicrostructureProxyFeatureExtractor,
+)
 from src.features.momentum_features import (
     MomentumFeatureExtractor,
     compute_cross_sectional_momentum,
@@ -45,6 +48,9 @@ from src.features.momentum_features import (
     compute_price_momentum,
     compute_rate_of_change,
     compute_rsi,
+)
+from src.features.volume_features import (
+    VolumeFeatureExtractor,
 )
 
 
@@ -481,4 +487,135 @@ def test_no_lookahead_mean_reversion_extractor_truncation(synthetic_price_series
             atol=1e-12,
             equal_nan=True,
             err_msg=f"Truncation invariance failed for {col} in MeanReversionFeatureExtractor!",
+        )
+
+
+@pytest.fixture
+def synthetic_ohlcv_series() -> pd.DataFrame:
+    """Generate realistic synthetic OHLCV dataframe with varying volume."""
+    np.random.seed(999)
+    n = 150
+    returns = np.random.normal(0.0005, 0.015, n)
+    prices = 100.0 * np.exp(np.cumsum(returns))
+    opens = prices * np.random.uniform(0.995, 1.005, n)
+    highs = np.maximum(prices, opens) * np.random.uniform(1.001, 1.015, n)
+    lows = np.minimum(prices, opens) * np.random.uniform(0.985, 0.999, n)
+    volumes = np.random.uniform(500_000, 2_000_000, n)
+    dates = pd.date_range("2024-01-01", periods=n, freq="B")
+    return pd.DataFrame(
+        {
+            "open": opens,
+            "high": highs,
+            "low": lows,
+            "close": prices,
+            "volume": volumes,
+        },
+        index=dates,
+    )
+
+
+def test_no_lookahead_volume_features(synthetic_ohlcv_series: pd.DataFrame):
+    """Verify all volume features are strictly invariant to future data perturbations."""
+    df_base = synthetic_ohlcv_series.copy()
+    cutoff_idx = 80
+
+    # Perturb future OHLCV heavily
+    df_perturbed = df_base.copy()
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("close")] *= 50.0
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("high")] *= 50.0
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("low")] *= 50.0
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("volume")] *= 100.0
+
+    extractor = VolumeFeatureExtractor(
+        vwap_window=20, cmf_window=20, roc_window=10, zscore_window=20, amihud_window=20
+    )
+    feat_base = extractor.compute(df_base)
+    feat_perturbed = extractor.compute(df_perturbed)
+
+    for col in feat_base.columns:
+        s_base = feat_base[col].iloc[: cutoff_idx + 1]
+        s_pert = feat_perturbed[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_pert.values,
+            rtol=1e-10,
+            atol=1e-10,
+            equal_nan=True,
+            err_msg=f"Lookahead bias detected in volume feature '{col}'!",
+        )
+
+
+def test_no_lookahead_microstructure_proxies(synthetic_ohlcv_series: pd.DataFrame):
+    """Verify all microstructure proxy features are strictly invariant to future data perturbations."""
+    df_base = synthetic_ohlcv_series.copy()
+    cutoff_idx = 85
+
+    # Perturb future data
+    df_perturbed = df_base.copy()
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("open")] *= 10.0
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("high")] *= 10.0
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("low")] *= 10.0
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("close")] *= 10.0
+    df_perturbed.iloc[cutoff_idx + 1 :, df_base.columns.get_loc("volume")] *= 0.1
+
+    extractor = MicrostructureProxyFeatureExtractor(spread_window=20, vpin_window=20, vol_window=20)
+    feat_base = extractor.compute(df_base)
+    feat_perturbed = extractor.compute(df_perturbed)
+
+    for col in feat_base.columns:
+        s_base = feat_base[col].iloc[: cutoff_idx + 1]
+        s_pert = feat_perturbed[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_pert.values,
+            rtol=1e-10,
+            atol=1e-10,
+            equal_nan=True,
+            err_msg=f"Lookahead bias detected in microstructure proxy '{col}'!",
+        )
+
+
+def test_no_lookahead_volume_extractor_truncation(synthetic_ohlcv_series: pd.DataFrame):
+    """Verify VolumeFeatureExtractor truncation invariance."""
+    df_full = synthetic_ohlcv_series.copy()
+    cutoff_idx = 90
+    df_trunc = df_full.iloc[: cutoff_idx + 1].copy()
+
+    extractor = VolumeFeatureExtractor()
+    feat_full = extractor.compute(df_full)
+    feat_trunc = extractor.compute(df_trunc)
+
+    for col in feat_full.columns:
+        s_full = feat_full[col].iloc[: cutoff_idx + 1]
+        s_trunc = feat_trunc[col]
+        np.testing.assert_allclose(
+            s_full.values,
+            s_trunc.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Truncation invariance failed for {col} in VolumeFeatureExtractor!",
+        )
+
+
+def test_no_lookahead_microstructure_extractor_truncation(synthetic_ohlcv_series: pd.DataFrame):
+    """Verify MicrostructureProxyFeatureExtractor truncation invariance."""
+    df_full = synthetic_ohlcv_series.copy()
+    cutoff_idx = 90
+    df_trunc = df_full.iloc[: cutoff_idx + 1].copy()
+
+    extractor = MicrostructureProxyFeatureExtractor()
+    feat_full = extractor.compute(df_full)
+    feat_trunc = extractor.compute(df_trunc)
+
+    for col in feat_full.columns:
+        s_full = feat_full[col].iloc[: cutoff_idx + 1]
+        s_trunc = feat_trunc[col]
+        np.testing.assert_allclose(
+            s_full.values,
+            s_trunc.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Truncation invariance failed for {col} in MicrostructureProxyFeatureExtractor!",
         )
