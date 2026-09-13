@@ -19,7 +19,7 @@ Usage:
 from __future__ import annotations
 
 import datetime
-from typing import Sequence
+from typing import Any, Sequence
 
 import pandas as pd
 import pandas_market_calendars as mcal
