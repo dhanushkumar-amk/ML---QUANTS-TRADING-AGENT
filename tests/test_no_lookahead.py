@@ -27,6 +27,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from src.features.mean_reversion_features import (
+    MeanReversionFeatureExtractor,
+    compute_bollinger_bands,
+    compute_ma_distance,
+    compute_price_zscore,
+    compute_rolling_half_life,
+    compute_rsi_reversion,
+    compute_stochastic_oscillator,
+)
 from src.features.momentum_features import (
     MomentumFeatureExtractor,
     compute_cross_sectional_momentum,
@@ -282,4 +291,194 @@ def test_no_lookahead_cross_sectional_momentum():
             atol=1e-12,
             equal_nan=True,
             err_msg=f"Lookahead detected in cross-sectional momentum for {col}!",
+        )
+
+
+# ============================================================
+# Mean-Reversion Lookahead Verification Tests (Phase 13)
+# ============================================================
+
+
+def test_no_lookahead_price_zscore(synthetic_price_series: pd.DataFrame):
+    """Verify price Z-scores are strictly invariant to future price perturbations."""
+    df = synthetic_price_series.copy()
+    cutoff_idx = 75
+
+    base = compute_price_zscore(df, windows=[10, 20, 50])
+
+    df_corrupted = df.copy()
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("close")] *= 500.0
+
+    perturbed = compute_price_zscore(df_corrupted, windows=[10, 20, 50])
+
+    for col in base.columns:
+        s_base = base[col].iloc[: cutoff_idx + 1]
+        s_pert = perturbed[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_pert.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Lookahead detected in compute_price_zscore for {col}!",
+        )
+
+
+def test_no_lookahead_bollinger_bands(synthetic_price_series: pd.DataFrame):
+    """Verify Bollinger %B and Bandwidth have zero future leakage."""
+    df = synthetic_price_series.copy()
+    cutoff_idx = 80
+
+    base = compute_bollinger_bands(df, window=20, num_std=2.0)
+
+    df_corrupted = df.copy()
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("close")] = 0.05
+
+    perturbed = compute_bollinger_bands(df_corrupted, window=20, num_std=2.0)
+
+    for col in base.columns:
+        s_base = base[col].iloc[: cutoff_idx + 1]
+        s_pert = perturbed[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_pert.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Lookahead detected in compute_bollinger_bands for {col}!",
+        )
+
+
+def test_no_lookahead_rsi_reversion(synthetic_price_series: pd.DataFrame):
+    """Verify RSI reversion signals and stretch have zero future leakage."""
+    df = synthetic_price_series.copy()
+    cutoff_idx = 65
+
+    base = compute_rsi_reversion(df, window=14)
+
+    df_corrupted = df.copy()
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("close")] = 99999.0
+
+    perturbed = compute_rsi_reversion(df_corrupted, window=14)
+
+    for col in base.columns:
+        s_base = base[col].iloc[: cutoff_idx + 1]
+        s_pert = perturbed[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_pert.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Lookahead detected in compute_rsi_reversion for {col}!",
+        )
+
+
+def test_no_lookahead_ma_distance(synthetic_price_series: pd.DataFrame):
+    """Verify ATR and Std normalized MA distance have zero future leakage."""
+    df = synthetic_price_series.copy()
+    cutoff_idx = 70
+
+    base = compute_ma_distance(df, windows=[20, 50], normalize_by="atr")
+
+    df_corrupted = df.copy()
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("close")] *= 100.0
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("high")] *= 100.0
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("low")] *= 100.0
+
+    perturbed = compute_ma_distance(df_corrupted, windows=[20, 50], normalize_by="atr")
+
+    for col in base.columns:
+        s_base = base[col].iloc[: cutoff_idx + 1]
+        s_pert = perturbed[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_pert.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Lookahead detected in compute_ma_distance for {col}!",
+        )
+
+
+def test_no_lookahead_stochastic(synthetic_price_series: pd.DataFrame):
+    """Verify stochastic oscillator components have zero future leakage."""
+    df = synthetic_price_series.copy()
+    cutoff_idx = 60
+
+    base = compute_stochastic_oscillator(df, k_window=14, d_window=3)
+
+    df_corrupted = df.copy()
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("close")] = 1.0
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("high")] = 2.0
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("low")] = 0.5
+
+    perturbed = compute_stochastic_oscillator(df_corrupted, k_window=14, d_window=3)
+
+    for col in base.columns:
+        s_base = base[col].iloc[: cutoff_idx + 1]
+        s_pert = perturbed[col].iloc[: cutoff_idx + 1]
+        np.testing.assert_allclose(
+            s_base.values,
+            s_pert.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Lookahead detected in compute_stochastic_oscillator for {col}!",
+        )
+
+
+def test_no_lookahead_rolling_half_life(synthetic_price_series: pd.DataFrame):
+    """Verify rolling half-life has zero future leakage."""
+    df = synthetic_price_series.copy()
+    cutoff_idx = 80
+
+    base = compute_rolling_half_life(df, window=50, ma_window=10)
+
+    df_corrupted = df.copy()
+    df_corrupted.iloc[cutoff_idx + 1 :, df.columns.get_loc("close")] *= 20.0
+
+    perturbed = compute_rolling_half_life(df_corrupted, window=50, ma_window=10)
+
+    s_base = base["half_life_50d"].iloc[: cutoff_idx + 1]
+    s_pert = perturbed["half_life_50d"].iloc[: cutoff_idx + 1]
+    np.testing.assert_allclose(
+        s_base.values,
+        s_pert.values,
+        rtol=1e-12,
+        atol=1e-12,
+        equal_nan=True,
+        err_msg="Lookahead detected in compute_rolling_half_life!",
+    )
+
+
+def test_no_lookahead_mean_reversion_extractor_truncation(synthetic_price_series: pd.DataFrame):
+    """Verify MeanReversionFeatureExtractor truncation invariance."""
+    df_full = synthetic_price_series.copy()
+    cutoff_idx = 85
+    df_trunc = df_full.iloc[: cutoff_idx + 1].copy()
+
+    extractor = MeanReversionFeatureExtractor(
+        zscore_windows=(10, 20),
+        bb_window=20,
+        rsi_window=14,
+        ma_dist_windows=(20,),
+        stoch_k=14,
+        stoch_d=3,
+        half_life_window=50,
+    )
+
+    feat_full = extractor.compute(df_full)
+    feat_trunc = extractor.compute(df_trunc)
+
+    for col in feat_full.columns:
+        s_full = feat_full[col].iloc[: cutoff_idx + 1]
+        s_trunc = feat_trunc[col]
+        np.testing.assert_allclose(
+            s_full.values,
+            s_trunc.values,
+            rtol=1e-12,
+            atol=1e-12,
+            equal_nan=True,
+            err_msg=f"Truncation invariance failed for {col} in MeanReversionFeatureExtractor!",
         )

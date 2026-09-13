@@ -32,6 +32,18 @@ from src.features.feature_registry import (
     feature_registry,
     register_feature,
 )
+from src.features.mean_reversion_features import (
+    MeanReversionFeatureExtractor,
+    compute_atr,
+    compute_bollinger_bands,
+    compute_ma_distance,
+    compute_price_zscore,
+    compute_rolling_half_life,
+    compute_rsi_reversion,
+    compute_stochastic_oscillator,
+    compute_true_range,
+    estimate_half_life,
+)
 from src.features.momentum_features import (
     MomentumFeatureExtractor,
     compute_cross_sectional_momentum,
@@ -80,6 +92,17 @@ __all__ = [
     "compute_macd",
     "compute_cross_sectional_momentum",
     "MomentumFeatureExtractor",
+    # Mean-reversion features
+    "compute_price_zscore",
+    "compute_bollinger_bands",
+    "compute_rsi_reversion",
+    "compute_true_range",
+    "compute_atr",
+    "compute_ma_distance",
+    "estimate_half_life",
+    "compute_rolling_half_life",
+    "compute_stochastic_oscillator",
+    "MeanReversionFeatureExtractor",
     # EDA utilities
     "compute_daily_returns",
     "summary_stats_table",
