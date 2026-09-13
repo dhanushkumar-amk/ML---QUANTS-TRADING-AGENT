@@ -101,6 +101,18 @@ def parse_args() -> argparse.Namespace:
         help="Action if market is closed ('wait' for open, 'exit', or 'poll_recent' available data).",
     )
     parser.add_argument(
+        "--validate",
+        action="store_true",
+        default=True,
+        help="Run data validation and freshness checks on streamed data (default: True).",
+    )
+    parser.add_argument(
+        "--no-validate",
+        dest="validate",
+        action="store_false",
+        help="Disable post-stream validation checks.",
+    )
+    parser.add_argument(
         "--config",
         type=str,
         default="configs/default.yaml",
@@ -222,6 +234,37 @@ def main() -> int:
         else:
             print(f"    - {ticker:<6} -> (no file created)")
     print("=" * 65 + "\n")
+
+    # 5. Automated Data Validation (Quality & Freshness Gatekeeper)
+    if args.validate:
+        from src.data_pipeline.validation_pipeline import ValidationPipeline
+        from src.data_pipeline.validation_rules import (
+            FreshnessCheckRule,
+            RangeCheckRule,
+            SchemaValidationRule,
+        )
+
+        print("=" * 65)
+        print("  STREAMING DATA VALIDATION (Quality & Freshness Gatekeeper)")
+        print("=" * 65)
+
+        val_pipeline = ValidationPipeline(
+            rules=[
+                SchemaValidationRule(),
+                RangeCheckRule(),
+                FreshnessCheckRule(max_lag_seconds=stale_thresh * 3),
+            ],
+            raise_on_critical=False,
+        )
+
+        for ticker in tickers:
+            p = realtime_dir / f"{ticker}.parquet"
+            if p.exists():
+                import pandas as pd
+
+                stream_df = pd.read_parquet(p, engine="pyarrow")
+                report = val_pipeline.validate(stream_df, ticker=ticker)
+                print(report.summary_table())
 
     return 0
 

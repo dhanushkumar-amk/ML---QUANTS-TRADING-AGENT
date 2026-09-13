@@ -1,0 +1,52 @@
+{
+  "ticker": "AAPL",
+  "timestamp": "2026-09-13T11:01:02.394822+00:00",
+  "total_rows": 2177,
+  "is_valid": false,
+  "passed": false,
+  "total_rules": 4,
+  "passed_rules": 3,
+  "failed_rules": 1,
+  "critical_failures": 0,
+  "critical_count": 0,
+  "warning_count": 1,
+  "warnings": 1,
+  "info_count": 0,
+  "results": [
+    {
+      "rule_name": "schema_validation",
+      "passed": true,
+      "severity": "info",
+      "affected_rows": 0,
+      "message": "Schema check passed: all required columns and dtypes valid.",
+      "details": {}
+    },
+    {
+      "rule_name": "range_check",
+      "passed": true,
+      "severity": "info",
+      "affected_rows": 0,
+      "message": "Range and bar geometry check passed.",
+      "details": {}
+    },
+    {
+      "rule_name": "continuity_check",
+      "passed": true,
+      "severity": "info",
+      "affected_rows": 0,
+      "message": "Continuity check passed: no missing trading days against NYSE calendar.",
+      "details": {}
+    },
+    {
+      "rule_name": "freshness_check",
+      "passed": false,
+      "severity": "warning",
+      "affected_rows": 1,
+      "message": "Data is stale: lag of 13 days exceeds threshold (5 days).",
+      "details": {
+        "lag_days": 13,
+        "latest_date": "2026-08-31"
+      }
+    }
+  ]
+}

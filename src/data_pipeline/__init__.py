@@ -29,6 +29,22 @@ from src.data_pipeline.storage_backend import (
     TimescaleDBBackend,
 )
 from src.data_pipeline.universe_builder import UniverseBuilder, UniverseConstituent
+from src.data_pipeline.validation_pipeline import (
+    DataValidationError,
+    Policy,
+    ValidationPipeline,
+    ValidationReport,
+    get_validation_trends,
+)
+from src.data_pipeline.validation_rules import (
+    ContinuityCheckRule,
+    CrossSourceConsistencyRule,
+    FreshnessCheckRule,
+    RangeCheckRule,
+    SchemaValidationRule,
+    ValidationResult,
+    ValidationRule,
+)
 from src.data_pipeline.validators import build_summary_table, print_summary, validate_ohlcv
 
 __all__ = [
@@ -63,4 +79,16 @@ __all__ = [
     "TimescaleDBBackend",
     "DataAccessLayer",
     "get_data_access",
+    "ValidationRule",
+    "ValidationResult",
+    "SchemaValidationRule",
+    "RangeCheckRule",
+    "ContinuityCheckRule",
+    "FreshnessCheckRule",
+    "CrossSourceConsistencyRule",
+    "ValidationPipeline",
+    "ValidationReport",
+    "Policy",
+    "DataValidationError",
+    "get_validation_trends",
 ]

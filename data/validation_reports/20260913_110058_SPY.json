@@ -1,0 +1,49 @@
+{
+  "ticker": "SPY",
+  "timestamp": "2026-09-13T11:00:58.095909+00:00",
+  "total_rows": 2177,
+  "is_valid": true,
+  "passed": true,
+  "total_rules": 4,
+  "passed_rules": 4,
+  "failed_rules": 0,
+  "critical_failures": 0,
+  "critical_count": 0,
+  "warning_count": 0,
+  "warnings": 0,
+  "info_count": 0,
+  "results": [
+    {
+      "rule_name": "schema_validation",
+      "passed": true,
+      "severity": "info",
+      "affected_rows": 0,
+      "message": "Schema check passed: all required columns and dtypes valid.",
+      "details": {}
+    },
+    {
+      "rule_name": "range_check",
+      "passed": true,
+      "severity": "info",
+      "affected_rows": 0,
+      "message": "Range and bar geometry check passed.",
+      "details": {}
+    },
+    {
+      "rule_name": "continuity_check",
+      "passed": true,
+      "severity": "info",
+      "affected_rows": 0,
+      "message": "Continuity check passed: no missing trading days against NYSE calendar.",
+      "details": {}
+    },
+    {
+      "rule_name": "freshness_check",
+      "passed": true,
+      "severity": "info",
+      "affected_rows": 0,
+      "message": "Freshness check passed: latest bar is 2026-08-31 00:00:00.",
+      "details": {}
+    }
+  ]
+}

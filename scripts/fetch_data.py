@@ -27,6 +27,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 # Ensure project root is on sys.path so ``src`` is importable
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _PROJECT_ROOT = _SCRIPT_DIR.parent
@@ -80,6 +82,11 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Clean existing raw data from data/raw instead of re-downloading from Yahoo Finance.",
     )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Run automated ValidationPipeline on data and emit quality report.",
+    )
     return parser.parse_args()
 
 
@@ -92,11 +99,13 @@ def fetch_yfinance(
     clean: bool = False,
     clean_strategy: str = "flag_only",
     from_raw: bool = False,
+    validate: bool = False,
 ) -> None:
-    """Fetch OHLCV data via yfinance, save to Parquet, and optionally clean."""
+    """Fetch OHLCV data via yfinance, save to Parquet, and optionally clean and validate."""
     from src.data_pipeline.corporate_actions import CorporateActionsAdjuster
     from src.data_pipeline.data_cleaner import DataCleaner
     from src.data_pipeline.storage import load_dataframe
+    from src.data_pipeline.validation_pipeline import ValidationPipeline
 
     data_cfg = cfg["data"]
     tickers = tickers_override or data_cfg.get("tickers", [])
@@ -122,6 +131,8 @@ def fetch_yfinance(
     # Summary of raw data
     summary = build_summary_table(results, source="yfinance")
     print_summary(summary, title="yfinance Raw Data Summary")
+
+    processed_results: dict[str, pd.DataFrame] = {}
 
     # 2. Optionally clean and adjust corporate actions
     if clean:
@@ -159,6 +170,20 @@ def fetch_yfinance(
                 raw_dir=_PROCESSED_DIR,
             )
             print(f"  --> Cleaned dataset saved to: {processed_path}\n")
+            processed_results[ticker] = cleaned_df
+
+    # 3. Validation Pipeline Gatekeeper
+    if validate or clean:
+        print("\n" + "=" * 65)
+        print("  AUTOMATED DATA VALIDATION PIPELINE (Quality Gatekeeper)")
+        print("=" * 65)
+
+        val_pipeline = ValidationPipeline(raise_on_critical=False)
+        datasets_to_validate = processed_results if clean else results
+
+        for ticker, df in datasets_to_validate.items():
+            report = val_pipeline.validate(df, ticker=ticker)
+            print(report.summary_table())
 
 
 def fetch_huggingface(cfg: dict) -> None:
@@ -192,6 +217,7 @@ def main() -> None:
             clean=args.clean,
             clean_strategy=args.clean_strategy,
             from_raw=args.from_raw,
+            validate=args.validate,
         )
 
     if args.source in ("huggingface", "all"):
