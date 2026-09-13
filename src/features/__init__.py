@@ -1,6 +1,19 @@
 # src.features — feature engineering & selection
 """Feature engineering: technical indicators, rolling stats, selection, EDA, and stationarity."""
 
+from src.features.autocorrelation_diagnostics import (
+    AutocorrelationReport,
+    LjungBoxRawResult,
+    RunLengthResult,
+    VarianceRatioResult,
+    autocorrelation_report,
+    compute_acf_pacf,
+    ljung_box_raw,
+    multi_asset_autocorrelation_summary,
+    multi_horizon_autocorrelation_analysis,
+    run_length_analysis,
+    variance_ratio_test,
+)
 from src.features.eda_utils import (
     compute_daily_returns,
     plot_acf_squared_returns,
@@ -64,4 +77,16 @@ __all__ = [
     "arch_lm_test",
     "volatility_clustering_report",
     "batch_volatility_clustering",
+    # Autocorrelation & momentum diagnostics
+    "AutocorrelationReport",
+    "LjungBoxRawResult",
+    "RunLengthResult",
+    "VarianceRatioResult",
+    "compute_acf_pacf",
+    "ljung_box_raw",
+    "variance_ratio_test",
+    "run_length_analysis",
+    "autocorrelation_report",
+    "multi_horizon_autocorrelation_analysis",
+    "multi_asset_autocorrelation_summary",
 ]
