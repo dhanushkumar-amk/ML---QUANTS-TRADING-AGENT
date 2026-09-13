@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import Any
 
 # Ensure project root is on sys.path so ``src`` is importable
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -74,6 +75,11 @@ def _parse_args() -> argparse.Namespace:
         default="flag_only",
         help="Remediation strategy for anomalies (default: flag_only).",
     )
+    parser.add_argument(
+        "--from-raw",
+        action="store_true",
+        help="Clean existing raw data from data/raw instead of re-downloading from Yahoo Finance.",
+    )
     return parser.parse_args()
 
 
@@ -85,26 +91,37 @@ def fetch_yfinance(
     tickers_override: list[str] | None,
     clean: bool = False,
     clean_strategy: str = "flag_only",
+    from_raw: bool = False,
 ) -> None:
     """Fetch OHLCV data via yfinance, save to Parquet, and optionally clean."""
     from src.data_pipeline.corporate_actions import CorporateActionsAdjuster
     from src.data_pipeline.data_cleaner import DataCleaner
+    from src.data_pipeline.storage import load_dataframe
 
     data_cfg = cfg["data"]
-    loader = YFinanceLoader(data_cfg)
-
     tickers = tickers_override or data_cfg.get("tickers", [])
-    logger.info("=== yfinance fetch: %s ===", tickers)
 
-    results = loader.fetch_batch(tickers=tickers)
+    results: dict[str, Any] = {}
 
-    # 1. Save raw data (immutable source of truth)
-    for ticker, df in results.items():
-        save_dataframe(df, source="yfinance", name=ticker)
+    if from_raw:
+        logger.info("=== Loading existing raw data from disk: %s ===", tickers)
+        for ticker in tickers:
+            try:
+                results[ticker] = load_dataframe(source="yfinance", name=ticker)
+            except FileNotFoundError:
+                logger.warning("No raw file found for %s in data/raw/yfinance", ticker)
+    else:
+        loader = YFinanceLoader(data_cfg)
+        logger.info("=== yfinance fetch: %s ===", tickers)
+        results = loader.fetch_batch(tickers=tickers)
 
-    # Summary of raw fetch
+        # 1. Save raw data (immutable source of truth)
+        for ticker, df in results.items():
+            save_dataframe(df, source="yfinance", name=ticker)
+
+    # Summary of raw data
     summary = build_summary_table(results, source="yfinance")
-    print_summary(summary, title="yfinance Raw Ingestion Summary")
+    print_summary(summary, title="yfinance Raw Data Summary")
 
     # 2. Optionally clean and adjust corporate actions
     if clean:
@@ -118,6 +135,16 @@ def fetch_yfinance(
         for ticker, df in results.items():
             # A. Corporate Actions (Splits & Dividends)
             splits = adjuster.detect_splits(df, ticker=ticker)
+            if splits:
+                print(f"\n  [Corporate Actions] Detected {len(splits)} split(s) for {ticker}:")
+                for s in splits:
+                    print(
+                        f"    * Date: {s.date} | Ratio: {s.ratio_str} (factor={s.ratio}) "
+                        f"| Source: {s.source} | Confidence: {s.confidence:.2f}"
+                    )
+            else:
+                print(f"\n  [Corporate Actions] No splits detected for {ticker}.")
+
             adjusted_df = adjuster.adjust_for_splits(df, splits)
 
             # B. Data Cleaning (Duplicates, Gaps, Outliers)
@@ -164,6 +191,7 @@ def main() -> None:
             args.tickers,
             clean=args.clean,
             clean_strategy=args.clean_strategy,
+            from_raw=args.from_raw,
         )
 
     if args.source in ("huggingface", "all"):

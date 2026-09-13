@@ -157,3 +157,98 @@ class YFinanceLoader:
             len(_tickers),
         )
         return results
+
+    # ---- point-in-time universe -----------------------------------------
+    def fetch_universe(
+        self,
+        universe: Any,
+        as_of_date: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
+    ) -> dict[str, pd.DataFrame]:
+        """Fetch historical bars for a point-in-time universe.
+
+        Supports UniverseBuilder instances, lists of UniverseConstituent, or
+        standard ticker lists. Respects active tenure windows and logs clear,
+        transparent warnings when delisted securities cannot be retrieved from
+        free retail data providers (yfinance).
+
+        Parameters
+        ----------
+        universe : UniverseBuilder | list[UniverseConstituent] | list[str]
+            Point-in-time universe representation.
+        as_of_date : str | None
+            Historical date when querying a UniverseBuilder instance.
+        start : str | None
+            Override query start date.
+        end : str | None
+            Override query end date.
+
+        Returns
+        -------
+        dict[str, pd.DataFrame]
+        """
+        # Resolve constituents
+        if hasattr(universe, "get_constituents"):
+            target_date = as_of_date or self.start
+            constituents = universe.get_constituents(target_date)
+        elif isinstance(universe, list):
+            constituents = universe
+        else:
+            raise TypeError(
+                f"Unsupported universe type: {type(universe)}. Expected UniverseBuilder or list."
+            )
+
+        results: dict[str, pd.DataFrame] = {}
+
+        for item in constituents:
+            if hasattr(item, "ticker"):
+                ticker = item.ticker
+                is_delisted = getattr(item, "is_delisted", False)
+                delist_date = getattr(item, "delisting_date", None)
+                delist_reason = getattr(item, "delisting_reason", None)
+                active_from = getattr(item, "active_from", None)
+            else:
+                ticker = str(item)
+                is_delisted = False
+                delist_date = None
+                delist_reason = None
+                active_from = None
+
+            # Determine appropriate query date window
+            req_start = start or (str(active_from) if active_from else self.start)
+            req_end = end or (str(delist_date) if delist_date else self.end)
+
+            logger.info(
+                "Fetching universe constituent %s (delisted=%s, range: %s -> %s)",
+                ticker,
+                is_delisted,
+                req_start,
+                req_end,
+            )
+
+            df = self.fetch(ticker, start=req_start, end=req_end)
+
+            if df is not None and not df.empty:
+                results[ticker] = df
+            else:
+                if is_delisted:
+                    logger.warning(
+                        "[%s] Delisted ticker data unavailable on yfinance (delisted %s, reason: %s). "
+                        "Known limitation: free retail feeds purge historical prices for delisted symbols. "
+                        "Institutional survivorship-free feeds (e.g. CRSP, Norgate) are needed for full tick coverage.",
+                        ticker,
+                        delist_date,
+                        delist_reason,
+                    )
+                else:
+                    logger.warning(
+                        "[%s] Constituent data could not be fetched from yfinance.", ticker
+                    )
+
+        logger.info(
+            "Universe fetch complete — %d/%d constituents successfully fetched.",
+            len(results),
+            len(constituents),
+        )
+        return results

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
@@ -88,6 +88,7 @@ class CorporateActionsAdjuster:
         df: pd.DataFrame,
         ticker: str = "UNKNOWN",
         price_col: str = "close",
+        volume_col: str = "volume",
         use_authoritative: bool = True,
     ) -> list[SplitEvent]:
         """Detect stock splits in a DataFrame using price ratio heuristics and/or yfinance.
@@ -100,6 +101,8 @@ class CorporateActionsAdjuster:
             Symbol for logging and authoritative lookups.
         price_col : str
             Column to inspect for overnight price gaps.
+        volume_col : str
+            Volume column to check for corresponding volume surges.
         use_authoritative : bool
             Whether to cross-check with yfinance corporate actions API.
 
@@ -115,6 +118,8 @@ class CorporateActionsAdjuster:
 
         prices = df_sorted[price_col].values
         dates = pd.to_datetime(df_sorted["date"]).dt.date.values
+        has_volume = volume_col in df_sorted.columns
+        volumes = df_sorted[volume_col].values if has_volume else None
 
         # 1. Heuristic Overnight Ratio Detection
         for i in range(1, len(prices)):
@@ -131,31 +136,53 @@ class CorporateActionsAdjuster:
             if ratio <= (1.0 - self.min_split_drop_pct):
                 candidate_factor = 1.0 / ratio
                 nearest_int = round(candidate_factor)
-                if nearest_int >= 2 and abs(candidate_factor - nearest_int) / nearest_int <= self.split_ratio_tolerance:
+                if (
+                    nearest_int >= 2
+                    and abs(candidate_factor - nearest_int) / nearest_int
+                    <= self.split_ratio_tolerance
+                ):
+                    vol_pattern = False
+                    if has_volume and volumes is not None:
+                        v_prev = volumes[i - 1]
+                        v_curr = volumes[i]
+                        if v_prev > 0 and not np.isnan(v_prev) and not np.isnan(v_curr):
+                            vol_ratio = v_curr / v_prev
+                            # In forward splits, post-split traded shares often expand
+                            vol_pattern = vol_ratio >= 1.2
+
+                    confidence = max(0.0, 1.0 - abs(candidate_factor - nearest_int))
+                    if vol_pattern:
+                        confidence = min(1.0, confidence + 0.1)
+
                     event = SplitEvent(
                         ticker=ticker,
                         date=dates[i],
                         ratio=float(nearest_int),
                         ratio_str=f"{nearest_int}:1",
                         source="heuristic",
-                        confidence=max(0.0, 1.0 - abs(candidate_factor - nearest_int)),
+                        confidence=confidence,
                     )
                     detected_splits.append(event)
                     logger.info(
-                        "[%s] Detected likely forward split on %s: %s (factor=%.2f, price drop: %.2f -> %.2f)",
+                        "[%s] Detected likely forward split on %s: %s (factor=%.2f, price drop: %.2f -> %.2f, vol_surge=%s)",
                         ticker,
                         event.date,
                         event.ratio_str,
                         event.ratio,
                         p_prev,
                         p_curr,
+                        vol_pattern,
                     )
 
             # Reverse Split Check (Large Jump, e.g. 1:10 jumps price ~10x)
             elif ratio >= (1.0 + self.min_reverse_split_jump_pct):
                 candidate_factor = ratio
                 nearest_int = round(candidate_factor)
-                if nearest_int >= 2 and abs(candidate_factor - nearest_int) / nearest_int <= self.split_ratio_tolerance:
+                if (
+                    nearest_int >= 2
+                    and abs(candidate_factor - nearest_int) / nearest_int
+                    <= self.split_ratio_tolerance
+                ):
                     event = SplitEvent(
                         ticker=ticker,
                         date=dates[i],
@@ -185,7 +212,10 @@ class CorporateActionsAdjuster:
                 for auth in auth_splits:
                     if min_date <= auth.date <= max_date:
                         # Check if already captured by heuristic
-                        existing = next((s for s in detected_splits if abs((s.date - auth.date).days) <= 1), None)
+                        existing = next(
+                            (s for s in detected_splits if abs((s.date - auth.date).days) <= 1),
+                            None,
+                        )
                         if existing:
                             existing.source = "yfinance+heuristic"
                             existing.ratio = auth.ratio
@@ -216,10 +246,14 @@ class CorporateActionsAdjuster:
                     if factor_float > 0 and factor_float != 1.0:
                         split_date = pd.to_datetime(dt).date()
                         if factor_float >= 1.0:
-                            ratio_str = f"{int(factor_float) if factor_float.is_integer() else factor_float:.2f}:1"
+                            ratio_str = (
+                                f"{int(factor_float)}:1"
+                                if factor_float.is_integer()
+                                else f"{factor_float:.2f}:1"
+                            )
                         else:
                             inv = 1.0 / factor_float
-                            ratio_str = f"1:{int(inv) if inv.is_integer() else inv:.2f}"
+                            ratio_str = f"1:{int(inv)}" if inv.is_integer() else f"1:{inv:.2f}"
 
                         splits.append(
                             SplitEvent(
@@ -243,12 +277,15 @@ class CorporateActionsAdjuster:
         splits: list[SplitEvent],
         price_cols: Sequence[str] = ("open", "high", "low", "close", "adj_close"),
         volume_col: str = "volume",
+        check_already_adjusted: bool = True,
     ) -> pd.DataFrame:
         """Retroactively back-adjust prices and forward-adjust volumes for detected splits.
 
         For each split event on date T with split ratio N (e.g. N=4 for 4:1):
           • Historical prices for t < T are divided by N (multiplied by 1/N).
           • Historical volumes for t < T are multiplied by N.
+          • If check_already_adjusted is True, validates whether the series already
+            reflects the split (ratio ~ 1.0 across split date) to avoid double-adjusting.
         """
         if df.empty or not splits:
             return df.copy()
@@ -262,6 +299,26 @@ class CorporateActionsAdjuster:
                 continue
 
             mask = df_dates < split.date
+            post_mask = df_dates >= split.date
+
+            if check_already_adjusted and mask.any() and post_mask.any():
+                # Check price discontinuity across split boundary
+                ref_col = next((c for c in ("close", "open") if c in df_adj.columns), None)
+                if ref_col:
+                    p_before = df_adj.loc[mask, ref_col].iloc[-1]
+                    p_after = df_adj.loc[post_mask, ref_col].iloc[0]
+                    if p_before > 0 and p_after > 0:
+                        observed_ratio = p_before / p_after
+                        # If ratio is close to 1.0 (within 25%), prices are already split-adjusted
+                        if abs(observed_ratio - 1.0) < 0.25:
+                            logger.info(
+                                "[%s] Prices across split date %s appear already adjusted (ratio=%.2f). Skipping redundant split adjustment.",
+                                split.ticker,
+                                split.date,
+                                observed_ratio,
+                            )
+                            continue
+
             # Back-adjust prices
             for col in price_cols:
                 if col in df_adj.columns:
@@ -329,8 +386,8 @@ class CorporateActionsAdjuster:
                     estimated_dividend=round(float(cash_div), 4),
                 )
                 div_events.append(event)
-                logger.debug(
-                    "[%s] Identified dividend adjustment on %s: factor=%.4f, est_div=$%.2f",
+                logger.info(
+                    "[%s] Identified dividend corporate action on %s: factor=%.4f, est_div=$%.2f",
                     ticker,
                     event.date,
                     event.adjustment_factor,

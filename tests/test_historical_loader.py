@@ -2,6 +2,7 @@
 # Unit Tests — Historical Data Loader (Phase 2)
 # ============================================================
 
+import datetime
 from unittest.mock import patch
 
 import pandas as pd
@@ -126,3 +127,50 @@ def test_fetch_batch(mock_download, sample_ohlcv_df):
     assert "AAPL" in batch
     assert "MSFT" in batch
     assert len(batch["AAPL"]) == 5
+
+
+@patch("yfinance.download")
+def test_fetch_universe(mock_download, sample_ohlcv_df):
+    from src.data_pipeline.universe_builder import UniverseConstituent
+
+    mock_download.return_value = sample_ohlcv_df.copy()
+
+    loader = YFinanceLoader({"retries": 1})
+    constituents = [
+        UniverseConstituent(ticker="AAPL", name="Apple Inc."),
+        UniverseConstituent(ticker="MSFT", name="Microsoft Corp"),
+    ]
+
+    results = loader.fetch_universe(constituents)
+    assert "AAPL" in results
+    assert "MSFT" in results
+    assert len(results["AAPL"]) == 5
+
+
+@patch("yfinance.download")
+def test_fetch_universe_delisted_handling(mock_download, sample_ohlcv_df):
+    from src.data_pipeline.universe_builder import UniverseConstituent
+
+    # Return valid df for AAPL, empty df for delisted ticker
+    def side_effect(ticker, **kwargs):
+        if ticker == "AAPL":
+            return sample_ohlcv_df.copy()
+        return pd.DataFrame()
+
+    mock_download.side_effect = side_effect
+
+    loader = YFinanceLoader({"retries": 1})
+    constituents = [
+        UniverseConstituent(ticker="AAPL", name="Apple Inc."),
+        UniverseConstituent(
+            ticker="YHOO",
+            name="Yahoo! Inc.",
+            is_delisted=True,
+            delisting_date=datetime.date(2017, 6, 19),
+            delisting_reason="acquired",
+        ),
+    ]
+
+    results = loader.fetch_universe(constituents)
+    assert "AAPL" in results
+    assert "YHOO" not in results  # Unavailable in yfinance, gracefully logged

@@ -153,3 +153,32 @@ def test_authoritative_splits_mock(adjuster):
         assert splits[0].ratio == 4.0
         assert splits[0].ratio_str == "4:1"
         assert splits[0].date == datetime.date(2020, 8, 31)
+
+
+def test_adjust_for_splits_already_adjusted(adjuster):
+    """Test that if price series is already split-adjusted, adjustment is skipped."""
+    dates = pd.date_range("2020-08-28", periods=4, freq="D")
+    df = pd.DataFrame(
+        {
+            "date": dates,
+            "open": [124.0, 124.5, 125.0, 126.0],
+            "high": [125.0, 125.5, 126.0, 127.0],
+            "low": [123.0, 123.5, 124.0, 125.0],
+            "close": [124.0, 124.5, 125.0, 126.0],
+            "volume": [50_000_000] * 4,
+        }
+    )
+
+    split = SplitEvent(
+        ticker="AAPL",
+        date=datetime.date(2020, 8, 30),
+        ratio=4.0,
+        ratio_str="4:1",
+        source="yfinance",
+    )
+
+    df_adj = adjuster.adjust_for_splits(df, [split], check_already_adjusted=True)
+
+    # Pre-split prices should remain ~124, NOT divided by 4 to 31
+    assert df_adj.loc[0, "close"] == 124.0
+    assert df_adj.loc[1, "close"] == 124.5

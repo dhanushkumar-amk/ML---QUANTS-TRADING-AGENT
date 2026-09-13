@@ -114,7 +114,9 @@ def test_cleaner_remediation_drop(clean_ohlcv_df):
 
 def test_cleaner_detect_trading_day_gaps(clean_ohlcv_df):
     # Drop Wednesday Aug 19 from a 5-day trading week
-    df_gap = clean_ohlcv_df[clean_ohlcv_df["date"] != pd.Timestamp("2026-08-19")].reset_index(drop=True)
+    df_gap = clean_ohlcv_df[clean_ohlcv_df["date"] != pd.Timestamp("2026-08-19")].reset_index(
+        drop=True
+    )
 
     cleaner = DataCleaner(strategy="flag_only")
     _, report = cleaner.clean(df_gap, ticker="GAP")
@@ -140,3 +142,21 @@ def test_data_quality_report_summary_table():
     assert "Total Issues Found" in table_str
     assert report.total_issues == 5
     assert report.affected_percentage == 0.5
+
+
+def test_cleaner_detect_2_bar_reverting_spike():
+    dates = pd.date_range("2026-08-17", periods=6, freq="B")
+    df = pd.DataFrame(
+        {
+            "date": dates,
+            "open": [100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+            "high": [102.0, 155.0, 155.0, 102.0, 102.0, 102.0],
+            "low": [98.0, 145.0, 145.0, 98.0, 98.0, 98.0],
+            "close": [100.0, 150.0, 152.0, 101.0, 100.5, 100.0],
+            "volume": [1_000_000] * 6,
+        }
+    )
+    cleaner = DataCleaner(strategy="flag_only")
+    df_res, report = cleaner.clean(df, ticker="SPIKE2")
+    assert report.reverting_spikes == 2
+    assert df_res["flag_spike"].sum() == 2

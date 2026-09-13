@@ -115,7 +115,9 @@ class DataCleaner:
         """
         self.strategy = strategy.lower()
         if self.strategy not in ("flag_only", "forward_fill", "drop"):
-            raise ValueError(f"Invalid strategy '{strategy}'. Choose 'flag_only', 'forward_fill', or 'drop'.")
+            raise ValueError(
+                f"Invalid strategy '{strategy}'. Choose 'flag_only', 'forward_fill', or 'drop'."
+            )
 
         self.spike_threshold = spike_threshold
         self.spike_reversion_tolerance = spike_reversion_tolerance
@@ -189,11 +191,15 @@ class DataCleaner:
             zero_vol_mask = df_work[volume_col] <= 0
         zero_vol_count = int(zero_vol_mask.sum())
 
-        # 5. Reverting Price Spikes (Bad Ticks)
+        # 5. Reverting Price Spikes (Bad Ticks) — 1-bar or 2-bar reversion
         spike_mask = pd.Series(False, index=df_work.index)
         if "close" in df_work.columns and total_raw >= 3:
             closes = df_work["close"].values
-            for i in range(1, len(closes) - 1):
+            n_bars = len(closes)
+            for i in range(1, n_bars - 1):
+                if spike_mask.iloc[i]:
+                    continue
+
                 p_prev = closes[i - 1]
                 p_curr = closes[i]
                 p_next = closes[i + 1]
@@ -208,11 +214,15 @@ class DataCleaner:
                 # Total deviation from baseline
                 baseline_diff = abs(p_next - p_prev) / p_prev
 
-                # Spike condition: sharp jump/drop and immediate reversal back near baseline
-                if abs(r1) >= self.spike_threshold and (r1 * r2 < 0) and baseline_diff <= self.spike_reversion_tolerance:
+                # 1-bar spike condition: sharp jump/drop and immediate reversal back near baseline
+                if (
+                    abs(r1) >= self.spike_threshold
+                    and (r1 * r2 < 0)
+                    and baseline_diff <= self.spike_reversion_tolerance
+                ):
                     spike_mask.iloc[i] = True
                     logger.warning(
-                        "[%s] Detected reverting price spike on %s: %.2f -> %.2f -> %.2f (ret=%.1f%%)",
+                        "[%s] Detected 1-bar reverting price spike on %s: %.2f -> %.2f -> %.2f (ret=%.1f%%)",
                         ticker,
                         df_work[date_col].iloc[i].strftime("%Y-%m-%d"),
                         p_prev,
@@ -220,6 +230,34 @@ class DataCleaner:
                         p_next,
                         r1 * 100,
                     )
+                    continue
+
+                # 2-bar spike condition: bars i and i+1 both spike, reverting at i+2
+                if i < n_bars - 2:
+                    p_next2 = closes[i + 2]
+                    if p_next2 > 0:
+                        r_rev = (p_next2 - p_next) / p_next
+                        baseline_diff_2 = abs(p_next2 - p_prev) / p_prev
+                        r_step2 = (p_next - p_prev) / p_prev
+
+                        if (
+                            abs(r1) >= self.spike_threshold
+                            and abs(r_step2) >= self.spike_threshold
+                            and (r1 * r_rev < 0)
+                            and baseline_diff_2 <= self.spike_reversion_tolerance
+                        ):
+                            spike_mask.iloc[i] = True
+                            spike_mask.iloc[i + 1] = True
+                            logger.warning(
+                                "[%s] Detected 2-bar reverting price spike on %s to %s: %.2f -> (%.2f, %.2f) -> %.2f",
+                                ticker,
+                                df_work[date_col].iloc[i].strftime("%Y-%m-%d"),
+                                df_work[date_col].iloc[i + 1].strftime("%Y-%m-%d"),
+                                p_prev,
+                                p_curr,
+                                p_next,
+                                p_next2,
+                            )
 
         spike_count = int(spike_mask.sum())
 
@@ -248,7 +286,9 @@ class DataCleaner:
             drop_mask = dup_mask | neg_price_mask | spike_mask
             df_work = df_work[~drop_mask].reset_index(drop=True)
             report.cleaned_rows = len(df_work)
-            logger.info("[%s] Strategy 'drop': %d bad rows removed.", ticker, total_raw - len(df_work))
+            logger.info(
+                "[%s] Strategy 'drop': %d bad rows removed.", ticker, total_raw - len(df_work)
+            )
             return df_work, report
 
         elif self.strategy == "forward_fill":
@@ -269,7 +309,11 @@ class DataCleaner:
 
             df_work = df_work.reset_index(drop=True)
             report.cleaned_rows = len(df_work)
-            logger.info("[%s] Strategy 'forward_fill': cleaned %d affected entries.", ticker, report.total_issues)
+            logger.info(
+                "[%s] Strategy 'forward_fill': cleaned %d affected entries.",
+                ticker,
+                report.total_issues,
+            )
             return df_work, report
 
         return df_work, report
