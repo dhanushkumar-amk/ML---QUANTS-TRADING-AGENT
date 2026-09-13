@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 import types
+import warnings
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -598,3 +599,222 @@ def plot_seasonality(
         logger.info("[%s] Saved seasonality plot -> %s", ticker, out_p)
 
     return fig, (ax_dow, ax_moy)
+
+
+# ============================================================
+# 7. ACF of Squared Returns Plot (Phase 10)
+# ============================================================
+
+
+def plot_acf_squared_returns(
+    ticker: str,
+    nlags: int = 20,
+    start: str | None = None,
+    end: str | None = None,
+    df: pd.DataFrame | None = None,
+    save_path: str | Path | None = None,
+) -> tuple[plt.Figure, Sequence[plt.Axes]]:
+    """Plot sample Autocorrelation Function (ACF) of raw vs. squared returns.
+
+    Demonstrates the signature stylized fact of financial time series:
+    raw returns have near-zero linear autocorrelation (no simple momentum/mean reversion),
+    while squared returns show persistent positive autocorrelation (volatility clustering).
+
+    Parameters
+    ----------
+    ticker : str
+        Ticker symbol.
+    nlags : int
+        Number of lags to evaluate (default: 20).
+    start : str | None
+        Start date filter.
+    end : str | None
+        End date filter.
+    df : pd.DataFrame | None
+        Optional pre-loaded dataframe.
+    save_path : str | Path | None
+        Destination image path.
+
+    Returns
+    -------
+    tuple[plt.Figure, Sequence[plt.Axes]]
+        (fig, (ax_raw, ax_sq))
+    """
+    from statsmodels.tsa.stattools import acf
+
+    data = _load_ticker_df(ticker, start=start, end=end, df=df)
+    returns = compute_daily_returns(data)
+    sq_returns = returns**2
+
+    clean_ret = returns.values
+    clean_sq = sq_returns.values
+
+    # Compute ACF with 95% Bartlett confidence bands
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        raw_acf, raw_conf = acf(clean_ret, nlags=nlags, alpha=0.05)
+        sq_acf, sq_conf = acf(clean_sq, nlags=nlags, alpha=0.05)
+
+    lags = np.arange(len(raw_acf))
+
+    fig, (ax_raw, ax_sq) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+
+    # 1. Raw returns ACF
+    ax_raw.vlines(lags, [0], raw_acf, color="#2563eb", linewidth=2.0)
+    ax_raw.plot(lags, raw_acf, "o", color="#1d4ed8", markersize=5)
+    # 95% confidence interval band around 0
+    band_upper = raw_conf[:, 1] - raw_acf
+    band_lower = raw_conf[:, 0] - raw_acf
+    ax_raw.fill_between(
+        lags, band_lower, band_upper, color="#93c5fd", alpha=0.35, label="95% Confidence Band"
+    )
+    ax_raw.axhline(0, color="black", linestyle="--", linewidth=0.8)
+    ax_raw.set_title(
+        f"{ticker} Raw Daily Returns ACF — Minimal Linear Dependence (EMH)",
+        fontsize=12,
+        fontweight="bold",
+    )
+    ax_raw.set_ylabel("Autocorrelation", fontsize=11)
+    ax_raw.grid(True, linestyle=":", alpha=0.6)
+    ax_raw.legend(loc="upper right")
+
+    # 2. Squared returns ACF
+    ax_sq.vlines(lags, [0], sq_acf, color="#dc2626", linewidth=2.0)
+    ax_sq.plot(lags, sq_acf, "o", color="#b91c1c", markersize=5)
+    sq_band_upper = sq_conf[:, 1] - sq_acf
+    sq_band_lower = sq_conf[:, 0] - sq_acf
+    ax_sq.fill_between(
+        lags,
+        sq_band_lower,
+        sq_band_upper,
+        color="#fca5a5",
+        alpha=0.35,
+        label="95% Confidence Band",
+    )
+    ax_sq.axhline(0, color="black", linestyle="--", linewidth=0.8)
+    ax_sq.set_title(
+        f"{ticker} Squared Returns ($r_t^2$) ACF — Significant Volatility Clustering",
+        fontsize=12,
+        fontweight="bold",
+    )
+    ax_sq.set_xlabel("Lag (Trading Days)", fontsize=11)
+    ax_sq.set_ylabel("Autocorrelation", fontsize=11)
+    ax_sq.grid(True, linestyle=":", alpha=0.6)
+    ax_sq.legend(loc="upper right")
+
+    fig.suptitle(f"{ticker} Volatility Memory Diagnostic", fontsize=14, fontweight="bold")
+    fig.tight_layout()
+
+    if save_path:
+        out_p = _ensure_dir(save_path)
+        fig.savefig(out_p, dpi=150, bbox_inches="tight")
+        logger.info("[%s] Saved ACF squared returns plot -> %s", ticker, out_p)
+
+    return fig, (ax_raw, ax_sq)
+
+
+# ============================================================
+# 8. Volatility Regimes Plot (Phase 10)
+# ============================================================
+
+
+def plot_volatility_regimes(
+    ticker: str,
+    window: int = 21,
+    regime_quantile: float = 0.5,
+    start: str | None = None,
+    end: str | None = None,
+    df: pd.DataFrame | None = None,
+    save_path: str | Path | None = None,
+) -> tuple[plt.Figure, plt.Axes]:
+    """Plot rolling volatility with shaded high/low volatility regimes.
+
+    Shades background periods:
+      - Low Volatility Regime: Rolling volatility <= threshold (e.g. median).
+      - High Volatility Regime: Rolling volatility > threshold.
+
+    Parameters
+    ----------
+    ticker : str
+        Ticker symbol.
+    window : int
+        Rolling window in trading days (default: 21 ~ 1 month).
+    regime_quantile : float
+        Quantile separating low from high volatility regime (default: 0.5 for median).
+    start : str | None
+        Start date filter.
+    end : str | None
+        End date filter.
+    df : pd.DataFrame | None
+        Optional pre-loaded dataframe.
+    save_path : str | Path | None
+        Destination image path.
+
+    Returns
+    -------
+    tuple[plt.Figure, plt.Axes]
+        (fig, ax)
+    """
+    data = _load_ticker_df(ticker, start=start, end=end, df=df)
+    returns = compute_daily_returns(data)
+
+    roll_vol = returns.rolling(window=window).std() * np.sqrt(252.0) * 100.0
+    valid_vol = roll_vol.dropna()
+    threshold = float(valid_vol.quantile(regime_quantile))
+
+    fig, ax = plt.subplots(figsize=(13, 6))
+
+    ax.plot(
+        valid_vol.index,
+        valid_vol,
+        color="#0f172a",
+        linewidth=1.4,
+        label=f"{window}-Day Rolling Volatility (% ann.)",
+    )
+    ax.axhline(
+        threshold,
+        color="#dc2626",
+        linestyle="--",
+        linewidth=1.2,
+        label=f"Regime Threshold ({regime_quantile:.0%}: {threshold:.1f}%)",
+    )
+
+    # Shading high vs low regimes
+    ax.fill_between(
+        valid_vol.index,
+        0,
+        valid_vol.max() * 1.1,
+        where=(valid_vol > threshold),
+        color="#fee2e2",
+        alpha=0.6,
+        label="High Volatility Regime",
+    )
+    ax.fill_between(
+        valid_vol.index,
+        0,
+        valid_vol.max() * 1.1,
+        where=(valid_vol <= threshold),
+        color="#f0fdf4",
+        alpha=0.6,
+        label="Low Volatility Regime",
+    )
+
+    ax.set_ylim(0, valid_vol.max() * 1.12)
+    ax.set_title(
+        f"{ticker} Volatility Regimes ({window}-Day Rolling Ann. Volatility vs {regime_quantile:.0%} Quantile)",
+        fontsize=13,
+        fontweight="bold",
+    )
+    ax.set_xlabel("Date", fontsize=11)
+    ax.set_ylabel("Annualized Volatility (%)", fontsize=11)
+    ax.grid(True, linestyle=":", alpha=0.6)
+    ax.legend(loc="upper left")
+
+    fig.tight_layout()
+
+    if save_path:
+        out_p = _ensure_dir(save_path)
+        fig.savefig(out_p, dpi=150, bbox_inches="tight")
+        logger.info("[%s] Saved volatility regimes plot -> %s", ticker, out_p)
+
+    return fig, ax
