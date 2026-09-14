@@ -12,7 +12,7 @@ and auditing in downstream ML modeling (Phases 18+).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Literal, Sequence
 
 import pandas as pd
 
@@ -32,6 +32,8 @@ class FeatureMetadata:
     required_columns: list[str] = field(default_factory=lambda: ["close"])
     compute_fn: Callable[..., pd.DataFrame] | None = None
     tags: list[str] = field(default_factory=list)
+    status: Literal["production", "experimental", "excluded"] = "production"
+    exclusion_reason: str = ""
 
 
 class FeatureRegistry:
@@ -49,6 +51,8 @@ class FeatureRegistry:
         required_columns: Sequence[str] | None = None,
         compute_fn: Callable[..., pd.DataFrame] | None = None,
         tags: Sequence[str] | None = None,
+        status: Literal["production", "experimental", "excluded"] = "production",
+        exclusion_reason: str = "",
     ) -> FeatureMetadata:
         """Register a feature specification in the registry.
 
@@ -68,6 +72,9 @@ class FeatureRegistry:
             Function taking DataFrame and returning DataFrame with this feature.
         tags : Sequence[str] | None
             Optional search/grouping tags.
+        status : {'production', 'experimental', 'excluded'}, default 'production'
+        exclusion_reason : str, default ''
+            Documented rationale if the feature is excluded from production models.
 
         Returns
         -------
@@ -82,10 +89,40 @@ class FeatureRegistry:
             required_columns=list(required_columns or ["close"]),
             compute_fn=compute_fn,
             tags=list(tags or []),
+            status=status,
+            exclusion_reason=exclusion_reason,
         )
         self._registry[name] = meta
-        logger.debug("Registered feature: %s [%s]", name, category)
+        logger.debug("Registered feature: %s [%s] (status: %s)", name, category, status)
         return meta
+
+    def mark_production(self, name: str) -> None:
+        """Mark a registered feature as vetted for production."""
+        meta = self.get(name)
+        meta.status = "production"
+        meta.exclusion_reason = ""
+        logger.info("Marked feature '%s' as production.", name)
+
+    def mark_excluded(self, name: str, reason: str) -> None:
+        """Mark a feature as excluded from production with documented rationale."""
+        meta = self.get(name)
+        meta.status = "excluded"
+        meta.exclusion_reason = reason
+        logger.info("Marked feature '%s' as excluded: %s", name, reason)
+
+    def list_production_features(self) -> list[str]:
+        """Return list of feature names vetted for production models."""
+        return sorted(
+            [name for name, meta in self._registry.items() if meta.status == "production"]
+        )
+
+    def list_excluded_features(self) -> dict[str, str]:
+        """Return mapping of excluded feature names to their documented exclusion reasons."""
+        return {
+            name: meta.exclusion_reason
+            for name, meta in self._registry.items()
+            if meta.status == "excluded"
+        }
 
     def get(self, name: str) -> FeatureMetadata:
         """Retrieve metadata for a registered feature.
@@ -109,13 +146,16 @@ class FeatureRegistry:
         self,
         category: str | None = None,
         tag: str | None = None,
+        status: str | None = None,
     ) -> list[str]:
-        """List registered feature names matching optional category and tag filters."""
+        """List registered feature names matching optional category, tag, and status filters."""
         names = []
         for name, meta in self._registry.items():
             if category and meta.category.lower() != category.lower():
                 continue
             if tag and tag.lower() not in [t.lower() for t in meta.tags]:
+                continue
+            if status and meta.status.lower() != status.lower():
                 continue
             names.append(name)
         return sorted(names)
@@ -126,6 +166,8 @@ class FeatureRegistry:
             {
                 "name": m.name,
                 "category": m.category,
+                "status": m.status,
+                "exclusion_reason": m.exclusion_reason,
                 "lookback_horizon": m.lookback_horizon,
                 "required_columns": ", ".join(m.required_columns),
                 "description": m.description,

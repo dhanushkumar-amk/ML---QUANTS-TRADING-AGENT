@@ -44,6 +44,15 @@ from src.features.feature_selection import (
     feature_selection_report,
     make_target,
 )
+from src.features.final_feature_set import (
+    EXCLUDED_FEATURES_RATIONALE,
+    FINAL_PRODUCTION_FEATURES,
+    PRODUCTION_QUANT_FEATURES,
+    PRODUCTION_SENTIMENT_FEATURES,
+    build_production_feature_dataset,
+    train_and_save_production_model,
+    update_registry_with_production_status,
+)
 from src.features.mean_reversion_features import (
     MeanReversionFeatureExtractor,
     compute_atr,
@@ -232,4 +241,12 @@ __all__ = [
     "compute_multicollinearity",
     "compute_tree_importance",
     "feature_selection_report",
+    # Final production feature set
+    "FINAL_PRODUCTION_FEATURES",
+    "PRODUCTION_QUANT_FEATURES",
+    "PRODUCTION_SENTIMENT_FEATURES",
+    "EXCLUDED_FEATURES_RATIONALE",
+    "build_production_feature_dataset",
+    "train_and_save_production_model",
+    "update_registry_with_production_status",
 ]

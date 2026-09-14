@@ -165,9 +165,7 @@ def build_multimodal_dataset(
     if news_df is not None and not news_df.empty:
         if scorer is None:
             scorer = FinBERTSentimentScorer()
-        daily_series = compute_daily_sentiment_series(
-            ticker=ticker, df_news=news_df, scorer=scorer
-        )
+        daily_series = compute_daily_sentiment_series(ticker=ticker, df_news=news_df, scorer=scorer)
         if not daily_series.empty:
             daily_series["date"] = pd.to_datetime(daily_series["date"], utc=True)
             daily_series = daily_series.set_index("date").reindex(df.index)
