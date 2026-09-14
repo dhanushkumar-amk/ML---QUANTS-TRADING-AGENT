@@ -288,6 +288,89 @@ class ParquetBackend(StorageBackend):
             return True
         return False
 
+    def save_news(
+        self,
+        df: pd.DataFrame,
+        ticker: str,
+        published_col: str = "published_at",
+        overwrite: bool = False,
+    ) -> Path:
+        """Save news headlines for a ticker into {news_dir}/{ticker}.parquet."""
+        news_dir = self.root_dir.parent / "news"
+        news_dir.mkdir(parents=True, exist_ok=True)
+        file_path = news_dir / f"{ticker.upper()}.parquet"
+
+        if df.empty:
+            return file_path
+
+        save_df = df.copy()
+        if published_col in save_df.columns:
+            save_df[published_col] = pd.to_datetime(save_df[published_col], utc=True)
+
+        if not overwrite and file_path.exists():
+            try:
+                existing_df = pd.read_parquet(file_path, engine="pyarrow")
+                if published_col in existing_df.columns:
+                    existing_df[published_col] = pd.to_datetime(
+                        existing_df[published_col], utc=True
+                    )
+                save_df = pd.concat([existing_df, save_df], ignore_index=True)
+                if "headline" in save_df.columns:
+                    save_df = save_df.drop_duplicates(subset=["headline"])
+            except Exception as e:
+                logger.warning("Could not merge existing news parquet: %s", e)
+
+        save_df.to_parquet(file_path, engine="pyarrow", index=False)
+        logger.info("Saved %d news records for %s to %s", len(save_df), ticker, file_path)
+        return file_path
+
+    def query_news(
+        self,
+        ticker: str | None = None,
+        start: str | datetime.date | pd.Timestamp | None = None,
+        end: str | datetime.date | pd.Timestamp | None = None,
+        columns: Sequence[str] | None = None,
+    ) -> pd.DataFrame:
+        """Query news headlines for a ticker or across all tickers over [start, end]."""
+        news_dir = self.root_dir.parent / "news"
+        if not news_dir.exists():
+            return pd.DataFrame()
+
+        if ticker:
+            files = [news_dir / f"{ticker.upper()}.parquet"]
+        else:
+            files = sorted(news_dir.glob("*.parquet"))
+
+        dfs: list[pd.DataFrame] = []
+        for f in files:
+            if not f.exists():
+                continue
+            try:
+                df = pd.read_parquet(f, engine="pyarrow")
+                dfs.append(df)
+            except Exception as e:
+                logger.warning("Failed to read news file %s: %s", f, e)
+
+        if not dfs:
+            return pd.DataFrame()
+
+        combined = pd.concat(dfs, ignore_index=True)
+        if "published_at" in combined.columns:
+            combined["published_at"] = pd.to_datetime(combined["published_at"], utc=True)
+            if start:
+                s_dt = pd.to_datetime(start, utc=True)
+                combined = combined[combined["published_at"] >= s_dt]
+            if end:
+                e_dt = pd.to_datetime(end, utc=True)
+                combined = combined[combined["published_at"] <= e_dt]
+            combined = combined.sort_values("published_at").reset_index(drop=True)
+
+        if columns:
+            existing_cols = [c for c in columns if c in combined.columns]
+            combined = combined[existing_cols]
+
+        return combined
+
 
 class TimescaleDBBackend(StorageBackend):
     """Optional SQL time-series storage backend using TimescaleDB (PostgreSQL).

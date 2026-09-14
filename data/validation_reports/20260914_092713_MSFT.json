@@ -1,0 +1,25 @@
+{
+  "ticker": "MSFT",
+  "timestamp": "2026-09-14T09:27:13.613276+00:00",
+  "total_rows": 10,
+  "is_valid": false,
+  "passed": false,
+  "total_rules": 1,
+  "passed_rules": 0,
+  "failed_rules": 1,
+  "critical_failures": 0,
+  "critical_count": 0,
+  "warning_count": 1,
+  "warnings": 1,
+  "info_count": 0,
+  "results": [
+    {
+      "rule_name": "mock_failing",
+      "passed": false,
+      "severity": "warning",
+      "affected_rows": 10,
+      "message": "Rule crashed during execution: MockFailingRule.validate() got an unexpected keyword argument 'context'",
+      "details": {}
+    }
+  ]
+}

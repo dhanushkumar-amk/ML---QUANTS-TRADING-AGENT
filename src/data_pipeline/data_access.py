@@ -145,6 +145,41 @@ class DataAccessLayer:
         """Query metadata if the ticker was ever delisted, acquired, or liquidated."""
         return self.delisted_registry.get_delisting_info(ticker)
 
+    # ---- News & Sentiment Data Access -----------------------------------
+
+    def save_news(
+        self,
+        ticker: str,
+        df: pd.DataFrame,
+        published_col: str = "published_at",
+        overwrite: bool = False,
+    ) -> Any:
+        """Persist news headlines for a ticker via the storage backend."""
+        if hasattr(self.backend, "save_news"):
+            return self.backend.save_news(
+                df=df,
+                ticker=ticker,
+                published_col=published_col,
+                overwrite=overwrite,
+            )
+        return self.backend.save(df=df, key=f"NEWS_{ticker.upper()}", overwrite=overwrite)
+
+    def get_news(
+        self,
+        ticker: str | None = None,
+        start: str | datetime.date | pd.Timestamp | None = None,
+        end: str | datetime.date | pd.Timestamp | None = None,
+        columns: Sequence[str] | None = None,
+    ) -> pd.DataFrame:
+        """Retrieve stored news headlines for a ticker over a given date range."""
+        if hasattr(self.backend, "query_news"):
+            return self.backend.query_news(ticker=ticker, start=start, end=end, columns=columns)
+        if ticker:
+            return self.backend.query(
+                key=f"NEWS_{ticker.upper()}", start=start, end=end, columns=columns
+            )
+        return pd.DataFrame()
+
 
 # Global default instance
 _DEFAULT_DATA_ACCESS: DataAccessLayer | None = None
