@@ -8,6 +8,11 @@ from src.models.baseline_model import (
     run_baseline_comparison,
     temporal_train_test_split,
 )
+from src.models.ensemble_model import (
+    ConfidenceWeightedEnsemble,
+    SimpleAverageEnsemble,
+    StackingMetaLearner,
+)
 from src.models.financial_metrics import (
     calculate_calmar_ratio,
     calculate_drawdown_series,
@@ -26,6 +31,12 @@ from src.models.hyperparameter_tuning import (
     split_tuning_and_final_test,
 )
 from src.models.lstm_model import LSTMModel, NumPyLSTMNetwork
+from src.models.model_comparison import (
+    ModelComparisonHarness,
+    bootstrap_sharpe_difference,
+    diebold_mariano_test,
+    profile_model_latency,
+)
 from src.models.model_interpretability import (
     TreeSHAPExplainer,
     cross_reference_shap_vs_univariate,
@@ -90,4 +101,11 @@ __all__ = [
     "TransformerModel",
     "NumPyTransformerNetwork",
     "plot_attention_weights",
+    "diebold_mariano_test",
+    "bootstrap_sharpe_difference",
+    "profile_model_latency",
+    "ModelComparisonHarness",
+    "SimpleAverageEnsemble",
+    "StackingMetaLearner",
+    "ConfidenceWeightedEnsemble",
 ]
