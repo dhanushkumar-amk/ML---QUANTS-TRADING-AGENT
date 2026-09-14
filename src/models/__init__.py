@@ -1,5 +1,5 @@
 # src.models — model training, evaluation, registry
-"""Model training, evaluation, hyperparameter tuning, model registry, and DL sequence prep."""
+"""Model training, evaluation, hyperparameter tuning, model registry, and DL sequence models."""
 
 from src.models.baseline_model import (
     BaselineClassifier,
@@ -25,6 +25,7 @@ from src.models.hyperparameter_tuning import (
     WalkForwardObjective,
     split_tuning_and_final_test,
 )
+from src.models.lstm_model import LSTMModel, NumPyLSTMNetwork
 from src.models.model_interpretability import (
     TreeSHAPExplainer,
     cross_reference_shap_vs_univariate,
@@ -39,6 +40,11 @@ from src.models.sequence_data_prep import (
     create_sliding_sequences,
     plot_sequence_window_sanity_check,
     walk_forward_sequence_split,
+)
+from src.models.transformer_model import (
+    NumPyTransformerNetwork,
+    TransformerModel,
+    plot_attention_weights,
 )
 from src.models.walk_forward import (
     WalkForwardSplitter,
@@ -79,4 +85,9 @@ __all__ = [
     "SequenceDataLoader",
     "walk_forward_sequence_split",
     "plot_sequence_window_sanity_check",
+    "LSTMModel",
+    "NumPyLSTMNetwork",
+    "TransformerModel",
+    "NumPyTransformerNetwork",
+    "plot_attention_weights",
 ]
