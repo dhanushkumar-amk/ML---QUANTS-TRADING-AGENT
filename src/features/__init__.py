@@ -37,6 +37,13 @@ from src.features.feature_scaling import (
     FeaturePipeline,
     TimeSeriesScaler,
 )
+from src.features.feature_selection import (
+    compute_multicollinearity,
+    compute_tree_importance,
+    compute_univariate_metrics,
+    feature_selection_report,
+    make_target,
+)
 from src.features.mean_reversion_features import (
     MeanReversionFeatureExtractor,
     compute_atr,
@@ -219,4 +226,10 @@ __all__ = [
     "TimeSeriesScaler",
     "CrossSectionalScaler",
     "FeaturePipeline",
+    # Feature selection & target engineering
+    "make_target",
+    "compute_univariate_metrics",
+    "compute_multicollinearity",
+    "compute_tree_importance",
+    "feature_selection_report",
 ]

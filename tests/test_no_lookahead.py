@@ -30,6 +30,9 @@ import pytest
 from src.features.feature_scaling import (
     FeaturePipeline,
 )
+from src.features.feature_selection import (
+    make_target,
+)
 from src.features.mean_reversion_features import (
     MeanReversionFeatureExtractor,
     compute_bollinger_bands,
@@ -688,3 +691,61 @@ def test_no_lookahead_feature_pipeline_scaling(synthetic_ohlcv_series: pd.DataFr
             atol=1e-12,
             err_msg=f"Pipeline transform leaked future data for '{col}'!",
         )
+
+
+def test_no_lookahead_make_target(synthetic_ohlcv_series: pd.DataFrame):
+    """Verify make_target never leaks future information or same-day identity.
+
+    Properties tested:
+    1. For horizon h=1, target Y_t depends ONLY on P_{t+1} and P_t.
+    2. Modifying prices strictly after t+1 (e.g. t+2..N) produces zero change in Y_t.
+    3. Target construction never uses past or same-day info as future (no negative or zero shifts).
+    4. The last h rows are strictly NaN and unobserved.
+    """
+    df_base = synthetic_ohlcv_series.copy()
+    cutoff_t = 50
+    horizon = 1
+
+    target_base = make_target(df_base, horizon=horizon, task_type="classification")
+    target_reg_base = make_target(df_base, horizon=horizon, task_type="regression")
+
+    # 1. Unobserved tail check: last `horizon` rows must be NaN
+    assert pd.isna(target_base.iloc[-1])
+    assert pd.isna(target_reg_base.iloc[-1])
+
+    # 2. Future perturbation beyond t+horizon (i.e. t+2 .. N):
+    # Altering future bars t+2 .. N must have ZERO effect on target at cutoff_t
+    df_perturbed_future = df_base.copy()
+    df_perturbed_future.iloc[cutoff_t + 2 :, df_base.columns.get_loc("close")] *= 500.0
+
+    target_perturbed_future = make_target(
+        df_perturbed_future, horizon=horizon, task_type="classification"
+    )
+    target_reg_perturbed = make_target(df_perturbed_future, horizon=horizon, task_type="regression")
+
+    # Target at cutoff_t and all earlier bars must be bit-for-bit identical
+    np.testing.assert_allclose(
+        target_base.iloc[: cutoff_t + 1].values,
+        target_perturbed_future.iloc[: cutoff_t + 1].values,
+        rtol=1e-12,
+        atol=1e-12,
+        err_msg="Target at t was corrupted by future prices at t+2..N!",
+    )
+    np.testing.assert_allclose(
+        target_reg_base.iloc[: cutoff_t + 1].values,
+        target_reg_perturbed.iloc[: cutoff_t + 1].values,
+        rtol=1e-12,
+        atol=1e-12,
+        err_msg="Regression forward return at t was corrupted by future prices at t+2..N!",
+    )
+
+    # 3. Target at cutoff_t MUST change if price at cutoff_t + 1 changes
+    # (Verifying that it is indeed sensitive to t+1 future price)
+    df_target_perturbed = df_base.copy()
+    # Invert the return by changing price at cutoff_t + 1
+    p_t = df_base["close"].iloc[cutoff_t]
+    df_target_perturbed.iloc[cutoff_t + 1, df_base.columns.get_loc("close")] = p_t * (
+        0.5 if target_base.iloc[cutoff_t] == 1.0 else 1.5
+    )
+    target_changed = make_target(df_target_perturbed, horizon=horizon, task_type="classification")
+    assert target_changed.iloc[cutoff_t] != target_base.iloc[cutoff_t]
