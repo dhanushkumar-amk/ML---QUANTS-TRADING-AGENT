@@ -8,6 +8,12 @@ from src.models.baseline_model import (
     run_baseline_comparison,
     temporal_train_test_split,
 )
+from src.models.gradient_boosting_model import GradientBoostingModel
+from src.models.walk_forward import (
+    WalkForwardSplitter,
+    evaluate_walk_forward,
+    plot_walk_forward_splits,
+)
 
 __all__ = [
     "temporal_train_test_split",
@@ -15,4 +21,8 @@ __all__ = [
     "BaselineClassifier",
     "evaluate_classification",
     "run_baseline_comparison",
+    "WalkForwardSplitter",
+    "plot_walk_forward_splits",
+    "evaluate_walk_forward",
+    "GradientBoostingModel",
 ]
