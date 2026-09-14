@@ -1,0 +1,16 @@
+{
+  "ticker": "SPY",
+  "timestamp": "2026-09-14T09:47:41.474684+00:00",
+  "total_rows": 10,
+  "is_valid": true,
+  "passed": true,
+  "total_rules": 0,
+  "passed_rules": 0,
+  "failed_rules": 0,
+  "critical_failures": 0,
+  "critical_count": 0,
+  "warning_count": 0,
+  "warnings": 0,
+  "info_count": 0,
+  "results": []
+}

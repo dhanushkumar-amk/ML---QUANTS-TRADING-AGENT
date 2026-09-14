@@ -8428,5 +8428,185 @@
       "negative": 0.075,
       "neutral": 0.85
     }
+  },
+  "We had a stellar quarter with record iPhone sales and outstanding profits.": {
+    "label": "positive",
+    "score": 0.7692307692307692,
+    "confidence": 0.8461538461538461,
+    "probabilities": {
+      "positive": 0.8461538461538461,
+      "negative": 0.07692307692307693,
+      "neutral": 0.07692307692307687
+    }
+  },
+  "There is clear uncertainty regarding macroeconomic conditions and supplier costs could rise.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.85,
+    "probabilities": {
+      "positive": 0.075,
+      "negative": 0.075,
+      "neutral": 0.85
+    }
+  },
+  "Good afternoon, and thank you for joining us today. Apple is reporting revenue of $90.1 billion, an all-time September quarter record and up 8% year-over-year. We set records for Mac, Services, and Wearables despite significant foreign exchange headwinds and challenging macroeconomic conditions. Our active installed base of devices reached an all-time high across all product categories. We returned nearly $29 billion to shareholders during the quarter while maintaining robust operating cash flow of $24 billion.": {
+    "label": "positive",
+    "score": 0.8639308855291576,
+    "confidence": 0.9071274298056156,
+    "probabilities": {
+      "positive": 0.9071274298056156,
+      "negative": 0.04319654427645789,
+      "neutral": 0.04967602591792657
+    }
+  },
+  "Shannon Cross: Tim, can you discuss the supply constraints in China and what you're seeing in consumer demand?\nTim Cook: Thank you, Shannon. We definitely faced foreign exchange headwinds of over 400 basis points. In terms of supply, we were constrained on iPhone 14 Pro and Pro Max throughout the quarter. Demand was strong, but production challenges in Zhengzhou could potentially limit output. We are working diligently with our suppliers, but there is clear uncertainty regarding shipping times and retail inventory as we head into the holiday quarter.": {
+    "label": "negative",
+    "score": -0.7692307692307692,
+    "confidence": 0.8461538461538461,
+    "probabilities": {
+      "positive": 0.07692307692307693,
+      "negative": 0.8461538461538461,
+      "neutral": 0.07692307692307687
+    }
+  },
+  "Today Apple reports revenue of $117.2 billion for the December quarter, down 5% year-over-year. We experienced a challenging environment that impacted our supply chain in November and December. Despite these headwinds, we achieved an incredible milestone: we now have over 2 billion active devices in our installed base. Services set an all-time revenue record of $20.8 billion, demonstrating the resilience of our ecosystem.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.04967602591792657,
+    "probabilities": {
+      "positive": 0.47516198704103674,
+      "negative": 0.47516198704103674,
+      "neutral": 0.04967602591792657
+    }
+  },
+  "Wamsi Mohan: Luca, regarding gross margin guidance, can you walk us through the components?\nLuca Maestri: Yes, Wamsi. Foreign exchange will continue to be a headwind of nearly 500 basis points. Macroeconomic conditions are uncertain, and enterprise spending appears somewhat cautious. We may see continued softness in consumer PC and Mac demand, which could fluctuate through the spring.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.85,
+    "probabilities": {
+      "positive": 0.075,
+      "negative": 0.075,
+      "neutral": 0.85
+    }
+  },
+  "We are pleased to report our results for the March quarter. Revenue was $94.8 billion, with an all-time record in Services and a March quarter record for iPhone. Our installed base of active devices reached another all-time high, driven by high customer satisfaction and switcher rates. Emerging markets were particularly strong, led by India, Indonesia, and Latin America.": {
+    "label": "positive",
+    "score": 0.9060022650056625,
+    "confidence": 0.928652321630804,
+    "probabilities": {
+      "positive": 0.928652321630804,
+      "negative": 0.022650056625141565,
+      "neutral": 0.04869762174405436
+    }
+  },
+  "David Vogt: Tim, how should we think about artificial intelligence and your capital allocation strategy?\nTim Cook: We view AI as huge and we'll continue weaving it into our products on a very thoughtful basis. There are clearly a number of issues that need to be sorted out, and we approach these developments deliberately. Uncertainty around regulatory frameworks remains, but our investment pipeline is disciplined.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.85,
+    "probabilities": {
+      "positive": 0.075,
+      "negative": 0.075,
+      "neutral": 0.85
+    }
+  },
+  "Apple today announced financial results for its fiscal 2023 third quarter. Revenue was $81.8 billion, down 1% year-over-year. We had an all-time revenue record in Services during the June quarter, driven by over 1 billion paid subscriptions. Our balance sheet remains exceptionally strong with over $166 billion in cash.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.04967602591792657,
+    "probabilities": {
+      "positive": 0.47516198704103674,
+      "negative": 0.47516198704103674,
+      "neutral": 0.04967602591792657
+    }
+  },
+  "Erik Woodring: Luca, can you clarify your expectations for the September quarter?\nLuca Maestri: We expect September quarter revenue performance to be similar to the June quarter, assuming the macroeconomic outlook does not worsen. Foreign exchange remains a drag of roughly 2 percentage points. Mac and iPad comparisons may be difficult due to supply lumpiness last year.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.85,
+    "probabilities": {
+      "positive": 0.075,
+      "negative": 0.075,
+      "neutral": 0.85
+    }
+  },
+  "Welcome to Microsoft's first quarter fiscal year 2023 conference call. Revenue was $50.1 billion, up 11% in constant currency. Microsoft Cloud revenue was $25.7 billion, up 24% year-over-year. In a world facing increasing headwinds, digital technology is the ultimate tailwind. We are helping our customers do more with less, accelerating their cloud transitions and optimizing their digital architectures.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.85,
+    "probabilities": {
+      "positive": 0.075,
+      "negative": 0.075,
+      "neutral": 0.85
+    }
+  },
+  "Keith Weiss: Satya, can you talk about Azure consumption trends and customer optimization?\nSatya Nadella: Sure, Keith. Customers are exercising caution given global inflation and energy costs in Europe. We are proactively helping them optimize their cloud spend. This may cause short-term deceleration in Azure growth rates, but it builds long-term customer trust. Volatility in macroeconomic environments makes exact quarterly trajectories somewhat unpredictable.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.04967602591792657,
+    "probabilities": {
+      "positive": 0.47516198704103674,
+      "negative": 0.47516198704103674,
+      "neutral": 0.04967602591792657
+    }
+  },
+  "Good afternoon. Revenue was $52.7 billion, up 7% in constant currency. The next major wave of computing is being born as the Microsoft Cloud turns the world's most advanced AI models into a new computing platform. We announced our expanded partnership with OpenAI, integrating cutting-edge generative AI across our entire tech stack.": {
+    "label": "negative",
+    "score": -0.7692307692307692,
+    "confidence": 0.8461538461538461,
+    "probabilities": {
+      "positive": 0.07692307692307693,
+      "negative": 0.8461538461538461,
+      "neutral": 0.07692307692307687
+    }
+  },
+  "Mark Murphy: Amy, could you give more color on the commercial bookings trajectory?\nAmy Hood: Thank you, Mark. Commercial bookings grew 7% in constant currency, though we saw lower growth in new standalone deals. Customers are scrutinizing budgets closely. There are risks of further elongated deal cycles, and we anticipate cloud consumption growth could moderate through the end of the fiscal year.": {
+    "label": "positive",
+    "score": 0.8639308855291576,
+    "confidence": 0.9071274298056156,
+    "probabilities": {
+      "positive": 0.9071274298056156,
+      "negative": 0.04319654427645789,
+      "neutral": 0.04967602591792657
+    }
+  },
+  "Microsoft reported revenue of $52.9 billion for the third quarter, up 10% in constant currency. We are innovating at rapid pace with Copilot for Microsoft 365, Azure OpenAI Service, and Bing. Over 2,500 Azure OpenAI Service customers were onboarded this quarter, up 10x sequentially.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.85,
+    "probabilities": {
+      "positive": 0.075,
+      "negative": 0.075,
+      "neutral": 0.85
+    }
+  },
+  "Brent Thill: Satya, what are the early signals on Copilot monetization and customer willingness to pay?\nSatya Nadella: The feedback is overwhelmingly positive. Productivity gains are real and measurable. However, enterprise deployments require extensive security evaluations and data governance, which may take time. The exact timing of material revenue contribution remains dependent on rollout pacing.": {
+    "label": "positive",
+    "score": 0.7692307692307692,
+    "confidence": 0.8461538461538461,
+    "probabilities": {
+      "positive": 0.8461538461538461,
+      "negative": 0.07692307692307693,
+      "neutral": 0.07692307692307687
+    }
+  },
+  "Revenue was $56.2 billion for the quarter, up 10% in constant currency, closing an outstanding fiscal year with $211 billion in full-year revenue. Microsoft Cloud delivered $111 billion in revenue, up 22%. We are leading the new AI platform wave and expanding our global datacenter infrastructure to meet extraordinary demand.": {
+    "label": "neutral",
+    "score": 0.0,
+    "confidence": 0.85,
+    "probabilities": {
+      "positive": 0.075,
+      "negative": 0.075,
+      "neutral": 0.85
+    }
+  },
+  "Karl Keirstead: Amy, regarding capital expenditures for AI infrastructure, what should we model for fiscal 2024?\nAmy Hood: CapEx will increase sequentially each quarter through fiscal 2024 as we invest in GPUs and data center builds. While supply of accelerators is currently constrained, revenue growth from AI will be gradual. There is inherent uncertainty around the timing of revenue matching heavy initial infrastructure outlays.": {
+    "label": "positive",
+    "score": 0.7692307692307692,
+    "confidence": 0.8461538461538461,
+    "probabilities": {
+      "positive": 0.8461538461538461,
+      "negative": 0.07692307692307693,
+      "neutral": 0.07692307692307687
+    }
   }
 }
