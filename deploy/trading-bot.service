@@ -1,0 +1,44 @@
+[Unit]
+Description=ML + Quants Live Paper Trading Bot
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trader
+Group=trader
+WorkingDirectory=/opt/trading-bot
+EnvironmentFile=/opt/trading-bot/.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/opt/trading-bot
+
+# Executable command: running the live trading loop script
+ExecStart=/opt/trading-bot/venv/bin/python -m src.execution.live_trading_loop --symbols AAPL MSFT NVDA GOOGL --bar-interval 60 --model-path /opt/trading-bot/models/production_lgb.pkl
+
+# Process supervision and auto-restart policy
+Restart=on-failure
+RestartSec=15s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# Graceful termination (allows live_trading_loop to cancel open orders & flush audit logs)
+TimeoutStopSec=30
+KillSignal=SIGTERM
+KillMode=mixed
+
+# Sandboxing & Resource constraints
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/trading-bot/logs /opt/trading-bot/data
+LimitNOFILE=65536
+MemoryMax=4G
+CPUQuota=200%
+
+# Logging output mapped to journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=quant-trading-bot
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  trading-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quant_trading_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+    volumes:
+      # Mount audit logs and persistent trading data to host
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./models:/app/models:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4096M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    command: ["--symbols", "AAPL", "MSFT", "NVDA", "GOOGL", "--bar-interval", "60"]

@@ -5,6 +5,12 @@
 Execution layer: order management, broker abstraction, Alpaca integration, and reconciliation.
 """
 
+from src.execution.audit_trail import (
+    AuditEvent,
+    AuditEventType,
+    AuditTrail,
+    audit_trail_summary,
+)
 from src.execution.broker_client import (
     AlpacaBrokerClient,
     BrokerAccount,
@@ -15,6 +21,10 @@ from src.execution.broker_client import (
     OrderSide,
     OrderStatus,
     OrderType,
+)
+from src.execution.live_trading_loop import (
+    LiveTradingConfig,
+    LiveTradingLoop,
 )
 from src.execution.order_manager import (
     OrderManager,
@@ -39,4 +49,12 @@ __all__ = [
     "PartialFillPolicy",
     "ReconciliationReport",
     "ReconciliationDiscrepancy",
+    # Audit Trail & Logging
+    "AuditEventType",
+    "AuditEvent",
+    "AuditTrail",
+    "audit_trail_summary",
+    # Live Trading Orchestration
+    "LiveTradingConfig",
+    "LiveTradingLoop",
 ]
