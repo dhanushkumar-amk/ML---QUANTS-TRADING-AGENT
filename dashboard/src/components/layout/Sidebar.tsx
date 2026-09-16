@@ -90,7 +90,7 @@ export function Sidebar() {
       <div className="p-3 border-t border-[#1a1a1a]">
         <div className="p-3 rounded-[4px] bg-[#0c0c0c] border border-[#1a1a1a] space-y-2 text-xs font-mono">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Account Value</span>
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Simulated Equity</span>
             <span className="text-white font-bold tabular-nums">$102,450.80</span>
           </div>
           <div className="flex items-center justify-between text-[11px]">
@@ -98,11 +98,11 @@ export function Sidebar() {
             <span className="text-slate-300 tabular-nums">$399,240.87</span>
           </div>
           <div className="pt-2 border-t border-[#181818] flex items-center justify-between text-[10px]">
-            <span className="inline-flex items-center gap-1.5 text-[#00B386] font-bold">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#00B386] animate-ping" />
-              LIVE ONLINE
+            <span className="inline-flex items-center gap-1.5 text-[#E5A93B] font-bold">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#E5A93B] animate-pulse" />
+              ALPACA PAPER
             </span>
-            <span className="text-slate-500">Paper IEX</span>
+            <span className="text-slate-500 font-mono text-[9px]">ID: SIM-79401</span>
           </div>
         </div>
       </div>

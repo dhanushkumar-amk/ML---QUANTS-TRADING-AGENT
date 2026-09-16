@@ -20,40 +20,42 @@ interface FeatureImportanceChartProps {
 
 export function FeatureImportanceChart({
   data,
-  height = 360,
+  height = 320,
 }: FeatureImportanceChartProps) {
   if (!data || data.length === 0) return null;
 
-  // Sort ascending so highest appears at top in horizontal layout
-  const sorted = [...data].sort((a, b) => a.importance - b.importance);
-  const maxImportance = Math.max(...sorted.map((s) => s.importance));
+  // Sort descending so highest alpha drivers appear first on the left
+  const sorted = [...data].sort((a, b) => b.importance - a.importance);
+  const maxImportance = sorted[0]?.importance || 1;
 
   return (
     <div className="w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={sorted}
-          layout="vertical"
-          margin={{ top: 5, right: 30, left: 110, bottom: 5 }}
+          margin={{ top: 15, right: 15, left: -15, bottom: 55 }}
         >
-          <CartesianGrid strokeDasharray="2 2" stroke="#161616" horizontal={false} />
+          <CartesianGrid strokeDasharray="2 2" stroke="#161616" vertical={false} />
           <XAxis
-            type="number"
+            dataKey="feature"
+            stroke="#555555"
+            fontSize={10}
+            interval={0}
+            angle={-35}
+            textAnchor="end"
+            tickLine={false}
+            axisLine={{ stroke: "#1F1F1F" }}
+            height={50}
+          />
+          <YAxis
             stroke="#555555"
             fontSize={10}
             tickLine={false}
-            axisLine={{ stroke: "#1F1F1F" }}
+            axisLine={false}
             tickFormatter={(v) => v.toFixed(2)}
           />
-          <YAxis
-            type="category"
-            dataKey="feature"
-            stroke="#888888"
-            fontSize={11}
-            tickLine={false}
-            axisLine={false}
-          />
           <Tooltip
+            cursor={{ fill: "rgba(255, 255, 255, 0.03)" }}
             contentStyle={{
               backgroundColor: "#0C0C0C",
               borderColor: "#1F1F1F",
@@ -67,14 +69,17 @@ export function FeatureImportanceChart({
               `Category: ${item?.payload?.category || "Alpha Factor"}`,
             ]}
           />
-          <Bar dataKey="importance" radius={[0, 2, 2, 0]}>
+          <Bar dataKey="importance" radius={[3, 3, 0, 0]} maxBarSize={36}>
             {sorted.map((entry, index) => {
-              // Highlight top 3 alpha features with Zerodha teal-green, others in monochrome grayscale steps
-              const isTop = entry.importance >= maxImportance * 0.75;
+              // Top 3 primary alpha features highlighted in Zerodha teal-green
+              const isTopTier = index < 3;
+              const isMidTier = index < 6;
               return (
                 <Cell
-                  key={`cell-${index}`}
-                  fill={isTop ? "#00B386" : "#2A2A2A"}
+                  key={`bar-${index}`}
+                  fill={isTopTier ? "#00B386" : isMidTier ? "#3A3A3A" : "#222222"}
+                  stroke={isTopTier ? "#00D49F" : "transparent"}
+                  strokeWidth={isTopTier ? 1 : 0}
                 />
               );
             })}

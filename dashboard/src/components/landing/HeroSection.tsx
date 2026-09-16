@@ -3,25 +3,30 @@
 import * as React from "react";
 import Link from "next/link";
 import { ParticleHero3D } from "@/components/3d/ParticleHero3D";
-import { ArrowUpRight, ArrowRight, ShieldCheck, Terminal, Activity } from "lucide-react";
+import { ArrowRight, Terminal, Activity, Cpu, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeroSectionProps {
   onExploreDashboard?: () => void;
+  onOpenArchitecture?: () => void;
 }
 
-export function HeroSection({ onExploreDashboard }: HeroSectionProps) {
+export function HeroSection({ onExploreDashboard, onOpenArchitecture }: HeroSectionProps) {
   return (
     <section className="relative w-full border-b border-[#1f1f1f] bg-[#080808] text-white overflow-hidden pt-8 pb-12">
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:32px_32px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Top Tag */}
-        <div className="flex items-center justify-center mb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] border border-[#222] bg-[#111] text-xs font-mono text-slate-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00B386]" />
-            <span>ALGORITHMIC EXECUTION ENGINE • PHASE 48</span>
+        {/* Top Prominent Paper Trading Simulation Disclaimer Tag */}
+        <div className="flex items-center justify-center mb-5">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-[4px] border border-[#2E2412] bg-[#141008] text-xs font-mono">
+            <span className="h-2 w-2 rounded-full bg-[#E5A93B] animate-pulse shrink-0" />
+            <span className="text-[#E5A93B] font-bold tracking-wide uppercase text-[11px]">
+              SIMULATED / PAPER TRADING
+            </span>
+            <span className="text-[#554326]">•</span>
+            <span className="text-slate-300 text-[11px]">ALPACA API SANDBOX • ZERO REAL CAPITAL AT RISK</span>
           </div>
         </div>
 
@@ -40,7 +45,7 @@ export function HeroSection({ onExploreDashboard }: HeroSectionProps) {
           <ParticleHero3D />
         </div>
 
-        {/* Primary CTAs */}
+        {/* Primary CTAs including Architecture Pipeline */}
         <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
           <Link href="/chart/AAPL">
             <Button className="h-10 px-5 rounded-[4px] bg-white text-black font-semibold text-xs hover:bg-slate-200 transition-colors gap-2 font-mono">
@@ -58,6 +63,17 @@ export function HeroSection({ onExploreDashboard }: HeroSectionProps) {
             <Activity className="h-4 w-4 text-[#00B386]" />
             <span>View Executive Portfolio</span>
           </Button>
+
+          {onOpenArchitecture && (
+            <Button
+              variant="outline"
+              onClick={onOpenArchitecture}
+              className="h-10 px-4 rounded-[4px] bg-[#0E0E0E] border-[#222] text-xs text-slate-300 hover:text-white hover:bg-[#161616] hover:border-[#333] transition-colors gap-2 font-mono"
+            >
+              <Cpu className="h-4 w-4 text-sky-400" />
+              <span>System Pipeline (5-Stage)</span>
+            </Button>
+          )}
         </div>
 
         {/* Below-the-fold Key Metrics Ticker Bar */}

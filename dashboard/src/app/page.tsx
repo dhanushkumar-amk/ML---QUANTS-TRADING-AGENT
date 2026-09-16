@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import { getOverview } from "@/lib/api-client";
-import { OverviewData } from "@/types";
+import { OverviewData, TradeRecord } from "@/types";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { MetricCard } from "@/components/MetricCard";
 import { EquityCurveChart } from "@/components/charts/EquityCurveChart";
+import { SystemArchitectureModal } from "@/components/architecture/SystemArchitectureModal";
+import { TradeReasoningModal } from "@/components/trades/TradeReasoningModal";
 import {
   Table,
   TableBody,
@@ -20,23 +22,28 @@ import { Progress } from "@/components/ui/progress";
 import { formatCurrency, formatPercent, cn } from "@/lib/utils";
 import {
   DollarSign,
-  Percent,
   TrendingUp,
   Shield,
   ArrowUpRight,
   ArrowDownRight,
-  Layers,
   Download,
   Calendar,
-  ChevronDown,
   PieChart,
   ShieldCheck,
+  Cpu,
+  Sparkles,
+  ArrowRight,
+  Database,
+  Binary,
+  Zap,
 } from "lucide-react";
 
 export default function OverviewPage() {
   const [data, setData] = React.useState<OverviewData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [activeFilter, setActiveFilter] = React.useState("ALL");
+  const [selectedTradeForReasoning, setSelectedTradeForReasoning] = React.useState<TradeRecord | null>(null);
+  const [isArchModalOpen, setIsArchModalOpen] = React.useState(false);
 
   const dashboardRef = React.useRef<HTMLDivElement>(null);
 
@@ -85,7 +92,10 @@ export default function OverviewPage() {
     <div className="space-y-8 pb-12 font-mono">
       {/* 1. Landing Hero with 3D Centerpiece */}
       <div className="-mx-6 md:-mx-8 -mt-6 md:-mt-8">
-        <HeroSection onExploreDashboard={scrollToDashboard} />
+        <HeroSection
+          onExploreDashboard={scrollToDashboard}
+          onOpenArchitecture={() => setIsArchModalOpen(true)}
+        />
       </div>
 
       {/* 2. Executive Portfolio Overview Section */}
@@ -97,13 +107,13 @@ export default function OverviewPage() {
               <h2 className="text-xl font-bold tracking-tight text-white uppercase">
                 Portfolio Performance
               </h2>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[3px] text-[10px] font-semibold bg-[#00B386]/10 text-[#00B386] border border-[#00B386]/25">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00B386] animate-pulse" />
-                ALPACA PAPER
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] text-[10px] font-semibold bg-[#E5A93B]/10 text-[#E5A93B] border border-[#E5A93B]/30">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#E5A93B] animate-pulse" />
+                ALPACA PAPER ENVIRONMENT
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1 font-sans">
-              Algorithmic execution metrics, risk engine headroom, and broker trade fills.
+              Continuous walk-forward execution, real-time risk engine gating, and broker order fills.
             </p>
           </div>
 
@@ -117,7 +127,14 @@ export default function OverviewPage() {
               variant="outline"
               size="sm"
               className="h-8 rounded-[4px] bg-[#0c0c0c] border-[#1f1f1f] text-xs text-slate-300 hover:text-white hover:bg-[#141414] gap-1.5"
-              onClick={() => alert("Exporting trades blotter...")}
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(recent_trades, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "paper_trades_blotter.json";
+                a.click();
+              }}
             >
               <Download className="h-3.5 w-3.5" />
               <span>Export Blotter</span>
@@ -140,7 +157,7 @@ export default function OverviewPage() {
           <MetricCard
             title="ANNUALIZED SHARPE"
             value={metrics.sharpe_ratio.toFixed(2)}
-            change="Target &gt; 2.0"
+            change="Target > 2.0"
             changeType="profit"
             subtitle={`Sortino: ${metrics.sortino_ratio.toFixed(2)}`}
             sparklineData={metrics.sparklines.sharpe}
@@ -158,70 +175,177 @@ export default function OverviewPage() {
           />
 
           <MetricCard
-            title="STRATEGY WIN RATE"
+            title="WIN RATE"
             value={`${metrics.win_rate_pct.toFixed(1)}%`}
             change={`PF: ${metrics.profit_factor.toFixed(2)}`}
             changeType="profit"
-            subtitle="Exp: +$142/trade"
-            sparklineData={metrics.sparklines.win_rate}
-            icon={<Percent className="h-4 w-4" />}
+            subtitle={`${recent_trades.length} Recent Fills`}
+            sparklineData={metrics.sparklines.equity}
+            icon={<ShieldCheck className="h-4 w-4" />}
           />
         </div>
 
-        {/* Hero Equity Curve Chart */}
-        <div className="rounded-[4px] border border-[#1f1f1f] bg-[#0c0c0c] p-4 sm:p-5 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#1a1a1a]">
+        {/* Recharts Equity Curve & Underwater Drawdown Chart */}
+        <div className="rounded-[4px] border border-[#1f1f1f] bg-[#0c0c0c] p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-2 border-b border-[#181818]">
             <div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Layers className="h-4 w-4 text-[#00B386]" />
-                Equity Trajectory vs Benchmark &amp; Drawdown
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                Cumulative Equity &amp; Underwater Drawdown
               </h3>
-              <p className="text-[11px] text-slate-500 font-sans mt-0.5">
-                Daily marked-to-market performance against SPY index.
+              <p className="text-[11px] text-slate-400 font-sans mt-0.5">
+                Strategy equity trajectory vs S&amp;P 500 (SPY) buy-and-hold benchmark.
               </p>
             </div>
-            <span className="text-xs text-[#00B386] bg-[#00B386]/10 px-2.5 py-1 rounded-[3px] border border-[#00B386]/25 font-bold">
-              Alpha: +18.6%
-            </span>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1.5 text-slate-300">
+                <span className="h-2 w-2 rounded-full bg-[#00B386]" /> Strategy Alpha
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-400">
+                <span className="h-2 w-2 rounded-full bg-[#555555]" /> SPY Benchmark
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-400">
+                <span className="h-2 w-2 rounded-full bg-[#EB5757]" /> Peak Drawdown
+              </span>
+            </div>
           </div>
-
-          <EquityCurveChart data={equity_curve} height={370} />
+          <EquityCurveChart data={equity_curve} height={320} />
         </div>
 
-        {/* Split Section: Order Blotter & Asset Allocation */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {/* Order Blotter (Zerodha Kite Style) */}
-          <div className="lg:col-span-8 rounded-[4px] border border-[#1f1f1f] bg-[#0c0c0c] overflow-hidden flex flex-col justify-between">
-            <div>
-              <div className="p-3.5 border-b border-[#1a1a1a] flex items-center justify-between">
-                <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Executed Order Blotter
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-sans mt-0.5">
-                    Recent broker fills on Alpaca Paper Rail.
-                  </p>
-                </div>
+        {/* 3. Interactive 5-Stage System Pipeline Visualizer Bar */}
+        <div className="rounded-[4px] border border-[#1f1f1f] bg-[#0C0C0C] p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#161616] pb-2.5">
+            <div className="flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-[#00B386]" />
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                End-to-End System Pipeline (5-Stage Institutional Flow)
+              </h3>
+            </div>
+            <button
+              onClick={() => setIsArchModalOpen(true)}
+              className="text-[11px] text-[#00B386] hover:text-[#00D49F] flex items-center gap-1 font-semibold"
+            >
+              <span>Explore Pipeline Details</span>
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          </div>
 
-                {/* Quick Filter */}
-                <div className="flex items-center gap-1 bg-[#141414] p-0.5 rounded-[3px] border border-[#222]">
-                  {["ALL", "AAPL", "MSFT"].map((sym) => (
-                    <button
-                      key={sym}
-                      onClick={() => setActiveFilter(sym)}
-                      className={cn(
-                        "px-2 py-0.5 text-[10px] rounded-[2px] transition-colors",
-                        activeFilter === sym
-                          ? "bg-white text-black font-bold"
-                          : "text-slate-400 hover:text-white"
-                      )}
-                    >
-                      {sym}
-                    </button>
-                  ))}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+            <button
+              onClick={() => setIsArchModalOpen(true)}
+              className="p-3 rounded-[3px] bg-[#080808] hover:bg-[#121212] border border-[#181818] hover:border-[#333] transition-all text-left group"
+            >
+              <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                <span>STAGE 01</span>
+                <span className="text-[#00B386]">&lt;2ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-sky-400 shrink-0" />
+                <span className="font-bold text-slate-200 group-hover:text-white">Data Ingestion</span>
+              </div>
+              <span className="text-[10px] text-slate-400 block mt-1">Alpaca Websockets</span>
+            </button>
+
+            <button
+              onClick={() => setIsArchModalOpen(true)}
+              className="p-3 rounded-[3px] bg-[#080808] hover:bg-[#121212] border border-[#181818] hover:border-[#333] transition-all text-left group"
+            >
+              <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                <span>STAGE 02</span>
+                <span className="text-[#00B386]">&lt;4ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Binary className="h-4 w-4 text-indigo-400 shrink-0" />
+                <span className="font-bold text-slate-200 group-hover:text-white">Features</span>
+              </div>
+              <span className="text-[10px] text-slate-400 block mt-1">FinBERT + Volatility</span>
+            </button>
+
+            <button
+              onClick={() => setIsArchModalOpen(true)}
+              className="p-3 rounded-[3px] bg-[#080808] hover:bg-[#121212] border border-[#181818] hover:border-[#333] transition-all text-left group"
+            >
+              <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                <span>STAGE 03</span>
+                <span className="text-[#00B386]">12.4ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cpu className="h-4 w-4 text-[#00B386] shrink-0" />
+                <span className="font-bold text-slate-200 group-hover:text-white">ML Ensemble</span>
+              </div>
+              <span className="text-[10px] text-slate-400 block mt-1">Stacked Meta-Learner</span>
+            </button>
+
+            <button
+              onClick={() => setIsArchModalOpen(true)}
+              className="p-3 rounded-[3px] bg-[#080808] hover:bg-[#121212] border border-[#181818] hover:border-[#333] transition-all text-left group"
+            >
+              <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                <span>STAGE 04</span>
+                <span className="text-[#00B386]">&lt;1ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-amber-400 shrink-0" />
+                <span className="font-bold text-slate-200 group-hover:text-white">Risk Engine</span>
+              </div>
+              <span className="text-[10px] text-slate-400 block mt-1">-15% DD Circuit Breaker</span>
+            </button>
+
+            <button
+              onClick={() => setIsArchModalOpen(true)}
+              className="col-span-2 sm:col-span-1 p-3 rounded-[3px] bg-[#080808] hover:bg-[#121212] border border-[#181818] hover:border-[#333] transition-all text-left group"
+            >
+              <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                <span>STAGE 05</span>
+                <span className="text-[#00B386]">&lt;14ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span className="font-bold text-slate-200 group-hover:text-white">Paper Execution</span>
+              </div>
+              <span className="text-[10px] text-slate-400 block mt-1">Smart TWAP Router</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4. Zerodha Style Order Blotter + Groww Style Asset Allocation Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Order Blotter (Zerodha Kite inspired) */}
+          <div className="lg:col-span-8 rounded-[4px] border border-[#1f1f1f] bg-[#0c0c0c] overflow-hidden">
+            <div className="p-4 border-b border-[#1a1a1a] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                    Recent Executed Orders (Blotter)
+                  </h3>
+                  <span className="text-[10px] text-slate-500">
+                    Click &ldquo;SHAP&rdquo; to view trade reasoning
+                  </span>
                 </div>
+                <p className="text-[11px] text-slate-400 font-sans mt-0.5">
+                  Real-time broker order status, execution prices, and trade P&amp;L.
+                </p>
               </div>
 
+              {/* Symbol Filters */}
+              <div className="flex items-center gap-1 bg-[#141414] p-0.5 rounded-[3px] border border-[#222]">
+                {["ALL", "AAPL", "MSFT", "NVDA", "SPY"].map((sym) => (
+                  <button
+                    key={sym}
+                    onClick={() => setActiveFilter(sym)}
+                    className={cn(
+                      "px-2 py-0.5 text-[10px] rounded-[2px] transition-colors",
+                      activeFilter === sym
+                        ? "bg-white text-black font-bold"
+                        : "text-slate-400 hover:text-white"
+                    )}
+                  >
+                    {sym}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-[#1a1a1a] bg-[#080808] hover:bg-transparent">
@@ -233,6 +357,7 @@ export default function OverviewPage() {
                     <TableHead className="text-right text-slate-500 text-[11px]">Value</TableHead>
                     <TableHead className="text-right text-slate-500 text-[11px]">P&amp;L</TableHead>
                     <TableHead className="text-center text-slate-500 text-[11px]">Status</TableHead>
+                    <TableHead className="text-right text-slate-500 text-[11px]">Why?</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -289,6 +414,16 @@ export default function OverviewPage() {
                           <span className="inline-flex items-center px-1.5 py-0.2 rounded-[2px] text-[10px] bg-[#141414] border border-[#222] text-slate-400">
                             {trade.status}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <button
+                            onClick={() => setSelectedTradeForReasoning(trade)}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#141414] hover:bg-[#1F1F1F] border border-[#2A2A2A] text-[#00B386] hover:text-white text-[10px] font-mono transition-colors shadow-sm"
+                            title="Inspect AI/SHAP reasoning for this trade"
+                          >
+                            <Sparkles className="h-2.5 w-2.5" />
+                            <span>Why?</span>
+                          </button>
                         </TableCell>
                       </TableRow>
                     );
@@ -366,6 +501,17 @@ export default function OverviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Embedded Modals */}
+      <TradeReasoningModal
+        trade={selectedTradeForReasoning}
+        onClose={() => setSelectedTradeForReasoning(null)}
+      />
+
+      <SystemArchitectureModal
+        isOpen={isArchModalOpen}
+        onClose={() => setIsArchModalOpen(false)}
+      />
     </div>
   );
 }
