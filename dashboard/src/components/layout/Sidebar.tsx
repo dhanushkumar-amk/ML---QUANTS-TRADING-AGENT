@@ -1,94 +1,108 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   CandlestickChart,
   LineChart,
-  ShieldAlert,
+  ShieldCheck,
   Cpu,
-  Activity,
+  ChevronRight,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Overview", href: "/", icon: LayoutDashboard },
-  { name: "Live Chart", href: "/chart/AAPL", icon: CandlestickChart },
-  { name: "Backtest Analysis", href: "/backtest", icon: LineChart },
-  { name: "Risk & Audit", href: "/risk", icon: ShieldAlert },
-  { name: "Model Comparison", href: "/models", icon: Cpu },
+  { name: "Live Terminal", href: "/chart/AAPL", icon: CandlestickChart },
+  { name: "Backtest Studio", href: "/backtest", icon: LineChart },
+  { name: "Risk Guardrails", href: "/risk", icon: ShieldCheck },
+  { name: "AI Models", href: "/models", icon: Cpu },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 border-r border-border/70 bg-card/60 backdrop-blur flex flex-col justify-between shrink-0 min-h-screen">
+    <aside className="w-[230px] border-r border-[#1a1a1a] bg-[#070707] flex flex-col justify-between shrink-0 min-h-screen select-none z-20">
       <div>
-        {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-border/60 gap-3">
-          <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-            <Activity className="h-5 w-5" />
+        {/* Brand Header - Zerodha/Groww Clean Flat Logo */}
+        <div className="h-14 flex items-center px-4 border-b border-[#1a1a1a] gap-2.5">
+          <div className="h-7 w-7 rounded-[4px] bg-white text-black flex items-center justify-center font-bold text-xs font-mono">
+            AQ
           </div>
-          <div>
-            <div className="font-bold text-sm tracking-tight text-foreground flex items-center gap-1.5">
-              <span>AGY QUANT</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-mono">
-                PAPER
-              </span>
-            </div>
-            <div className="text-[10px] text-muted-foreground font-mono">
-              v1.0 • Alpaca Live Rail
-            </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-xs tracking-wider text-white font-mono uppercase">
+              AGY QUANT
+            </span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              Alpaca Paper Rail
+            </span>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="p-3 space-y-1">
-          {navigation.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href.split("/")[1]);
-            const Icon = item.icon;
+        {/* Navigation Section */}
+        <div className="p-3">
+          <div className="px-2 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+            Menu
+          </div>
+          <nav className="space-y-1">
+            {navigation.map((item) => {
+              const isActive =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href.split("/")[1]);
+              const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-xs font-medium transition-all duration-150",
-                  isActive
-                    ? "bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                )}
-              >
-                <Icon className={cn("h-4 w-4", isActive ? "text-emerald-400" : "text-muted-foreground")} />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2 rounded-[4px] text-xs font-medium transition-colors group",
+                    isActive
+                      ? "bg-[#141414] text-white font-semibold border-l-2 border-[#00B386]"
+                      : "text-slate-400 hover:text-white hover:bg-[#0f0f0f]"
+                  )}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      className={cn(
+                        "h-4 w-4 transition-colors",
+                        isActive ? "text-[#00B386]" : "text-slate-500 group-hover:text-slate-300"
+                      )}
+                    />
+                    <span>{item.name}</span>
+                  </div>
+                  {isActive && (
+                    <ChevronRight className="h-3 w-3 text-slate-500" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
-      {/* Footer System Diagnostics */}
-      <div className="p-4 border-t border-border/60 text-xs">
-        <div className="p-3 rounded-lg bg-muted/40 border border-border/40 space-y-2">
+      {/* Footer System Status - Minimal Zerodha Kite Account Box */}
+      <div className="p-3 border-t border-[#1a1a1a]">
+        <div className="p-3 rounded-[4px] bg-[#0c0c0c] border border-[#1a1a1a] space-y-2 text-xs font-mono">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Account Value</span>
+            <span className="text-white font-bold tabular-nums">$102,450.80</span>
+          </div>
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Execution Loop</span>
-            <span className="flex items-center gap-1 text-emerald-400 font-mono">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              ONLINE
+            <span className="text-slate-500">Buying Power</span>
+            <span className="text-slate-300 tabular-nums">$399,240.87</span>
+          </div>
+          <div className="pt-2 border-t border-[#181818] flex items-center justify-between text-[10px]">
+            <span className="inline-flex items-center gap-1.5 text-[#00B386] font-bold">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00B386] animate-ping" />
+              LIVE ONLINE
             </span>
-          </div>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Market Feed</span>
-            <span className="text-foreground font-mono">Alpaca IEX</span>
-          </div>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Drawdown Limit</span>
-            <span className="text-foreground font-mono">15.0% Kill-Switch</span>
+            <span className="text-slate-500">Paper IEX</span>
           </div>
         </div>
       </div>

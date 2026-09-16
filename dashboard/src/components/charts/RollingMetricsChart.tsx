@@ -9,6 +9,7 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  CartesianGrid,
 } from "recharts";
 import { RollingMetricPoint } from "@/types";
 
@@ -24,18 +25,19 @@ export function RollingMetricsChart({ data, height = 260 }: RollingMetricsChartP
     <div className="w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="2 2" stroke="#161616" vertical={false} />
           <XAxis
             dataKey="date"
-            stroke="#64748b"
+            stroke="#555555"
             fontSize={10}
             tickLine={false}
-            axisLine={{ stroke: "rgba(51, 65, 85, 0.4)" }}
+            axisLine={{ stroke: "#1F1F1F" }}
             tickFormatter={(str) => str.slice(5)}
           />
           <YAxis
             yAxisId="sharpe"
             domain={["auto", "auto"]}
-            stroke="#10b981"
+            stroke="#00B386"
             fontSize={10}
             tickLine={false}
             axisLine={false}
@@ -45,7 +47,7 @@ export function RollingMetricsChart({ data, height = 260 }: RollingMetricsChartP
             yAxisId="vol"
             orientation="right"
             domain={["auto", "auto"]}
-            stroke="#06b6d4"
+            stroke="#888888"
             fontSize={10}
             tickLine={false}
             axisLine={false}
@@ -53,10 +55,12 @@ export function RollingMetricsChart({ data, height = 260 }: RollingMetricsChartP
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#0f172a",
-              borderColor: "rgba(51, 65, 85, 0.8)",
-              borderRadius: "8px",
-              fontSize: "12px",
+              backgroundColor: "#0C0C0C",
+              borderColor: "#1F1F1F",
+              borderRadius: "4px",
+              fontSize: "11px",
+              color: "#FAFAFA",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.8)",
             }}
           />
           <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
@@ -65,8 +69,8 @@ export function RollingMetricsChart({ data, height = 260 }: RollingMetricsChartP
             type="monotone"
             dataKey="rolling_sharpe"
             name="Rolling 6M Sharpe"
-            stroke="#10b981"
-            strokeWidth={2}
+            stroke="#00B386"
+            strokeWidth={1.5}
             dot={false}
           />
           <Line
@@ -74,8 +78,8 @@ export function RollingMetricsChart({ data, height = 260 }: RollingMetricsChartP
             type="monotone"
             dataKey="rolling_volatility"
             name="Rolling Volatility (%)"
-            stroke="#06b6d4"
-            strokeWidth={1.5}
+            stroke="#888888"
+            strokeWidth={1.2}
             strokeDasharray="3 3"
             dot={false}
           />

@@ -47,25 +47,26 @@ export function TradingViewChart({
       width: chartContainerRef.current.clientWidth,
       height,
       layout: {
-        background: { color: "transparent" },
-        textColor: "#94a3b8",
+        background: { color: "#0A0A0A" },
+        textColor: "#777777",
         fontSize: 11,
+        fontFamily: "monospace",
       },
       grid: {
-        vertLines: { color: "rgba(51, 65, 85, 0.25)" },
-        horzLines: { color: "rgba(51, 65, 85, 0.25)" },
+        vertLines: { color: "#141414" },
+        horzLines: { color: "#141414" },
       },
       crosshair: {
         mode: 1,
-        vertLine: { color: "#64748b", width: 1, style: 2 },
-        horzLine: { color: "#64748b", width: 1, style: 2 },
+        vertLine: { color: "#333333", width: 1, style: 2 },
+        horzLine: { color: "#333333", width: 1, style: 2 },
       },
       timeScale: {
-        borderColor: "rgba(51, 65, 85, 0.5)",
+        borderColor: "#1a1a1a",
         timeVisible: true,
       },
       rightPriceScale: {
-        borderColor: "rgba(51, 65, 85, 0.5)",
+        borderColor: "#1a1a1a",
         autoScale: true,
       },
     });
@@ -82,13 +83,13 @@ export function TradingViewChart({
     });
     volumeSeriesRef.current = volumeSeries;
 
-    // 2. Candlestick series
+    // 2. Candlestick series (Zerodha Kite Palette)
     const candleSeries = chart.addCandlestickSeries({
-      upColor: "#10b981", // Emerald green
-      downColor: "#f43f5e", // Rose red
+      upColor: "#00B386", // Zerodha teal-green
+      downColor: "#EB5757", // Groww red
       borderVisible: false,
-      wickUpColor: "#10b981",
-      wickDownColor: "#f43f5e",
+      wickUpColor: "#00B386",
+      wickDownColor: "#EB5757",
     });
     candleSeriesRef.current = candleSeries;
 
@@ -159,7 +160,7 @@ export function TradingViewChart({
       const volData: HistogramData<Time>[] = bars.map((b) => ({
         time: b.time as Time,
         value: b.volume,
-        color: b.close >= b.open ? "rgba(16, 185, 129, 0.35)" : "rgba(244, 63, 94, 0.35)",
+        color: b.close >= b.open ? "rgba(0, 179, 134, 0.35)" : "rgba(235, 87, 87, 0.35)",
       }));
       volumeSeriesRef.current.setData(volData);
     }
@@ -197,7 +198,7 @@ export function TradingViewChart({
       const tvMarkers: SeriesMarker<Time>[] = markers.map((m) => ({
         time: m.time as Time,
         position: m.position,
-        color: m.color,
+        color: m.color === "#10b981" ? "#00B386" : m.color === "#f43f5e" ? "#EB5757" : m.color,
         shape: m.shape,
         text: m.text,
       }));
@@ -209,7 +210,7 @@ export function TradingViewChart({
   }, [bars, markers, showSMA20, showSMA60, showBollinger]);
 
   return (
-    <div className="relative w-full rounded-lg overflow-hidden border border-border/60 bg-card/40">
+    <div className="relative w-full rounded-[4px] overflow-hidden border border-[#1f1f1f] bg-[#0A0A0A]">
       <div ref={chartContainerRef} className="w-full" style={{ height }} />
     </div>
   );

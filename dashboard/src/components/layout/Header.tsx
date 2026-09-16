@@ -3,14 +3,18 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sun, Moon, Clock, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Clock, TrendingUp } from "lucide-react";
 
-const POPULAR_TICKERS = ["AAPL", "MSFT", "NVDA", "SPY", "GOOGL"];
+const WATCHLIST_ITEMS = [
+  { ticker: "AAPL", price: "224.50", delta: "+1.24%", isUp: true },
+  { ticker: "MSFT", price: "432.10", delta: "+0.85%", isUp: true },
+  { ticker: "NVDA", price: "118.90", delta: "+2.40%", isUp: true },
+  { ticker: "SPY",  price: "562.80", delta: "+0.32%", isUp: true },
+  { ticker: "GOOGL", price: "178.40", delta: "-0.15%", isUp: false },
+];
 
 export function Header() {
   const pathname = usePathname();
-  const [isDark, setIsDark] = React.useState(true);
   const [timeStr, setTimeStr] = React.useState("");
 
   React.useEffect(() => {
@@ -23,60 +27,51 @@ export function Header() {
     return () => clearInterval(interval);
   }, []);
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("light");
-  };
-
   return (
-    <header className="h-16 border-b border-border/70 bg-card/40 backdrop-blur px-6 flex items-center justify-between sticky top-0 z-20">
-      {/* Ticker Quick Switcher */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground mr-1 flex items-center gap-1">
-          <TrendingUp className="h-3.5 w-3.5" /> Watchlist:
+    <header className="h-14 border-b border-[#1a1a1a] bg-[#070707] px-5 flex items-center justify-between sticky top-0 z-30 font-mono">
+      {/* Watchlist Strip - Zerodha Marketwatch style */}
+      <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
+        <span className="text-[11px] text-slate-500 mr-2 flex items-center gap-1 font-semibold uppercase tracking-wider shrink-0">
+          <TrendingUp className="h-3.5 w-3.5 text-slate-400" /> Watchlist
         </span>
-        {POPULAR_TICKERS.map((t) => {
-          const isSelected = pathname === `/chart/${t}`;
-          return (
-            <Link
-              key={t}
-              href={`/chart/${t}`}
-              className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
-                isSelected
-                  ? "bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/40"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-              }`}
-            >
-              {t}
-            </Link>
-          );
-        })}
+        <div className="flex items-center gap-1.5">
+          {WATCHLIST_ITEMS.map((item) => {
+            const isSelected = pathname === `/chart/${item.ticker}`;
+            return (
+              <Link
+                key={item.ticker}
+                href={`/chart/${item.ticker}`}
+                className={`flex items-center gap-2 px-2.5 py-1 rounded-[4px] text-xs transition-colors border ${
+                  isSelected
+                    ? "bg-[#141414] text-white border-white/20 font-bold"
+                    : "bg-[#0c0c0c] text-slate-300 border-[#1a1a1a] hover:bg-[#121212] hover:border-[#2a2a2a]"
+                }`}
+              >
+                <span className="text-white font-semibold">{item.ticker}</span>
+                <span className="text-slate-400 tabular-nums">{item.price}</span>
+                <span className={`text-[11px] font-medium tabular-nums ${item.isUp ? "text-[#00B386]" : "text-[#EB5757]"}`}>
+                  {item.delta}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Right Controls: Market Status, UTC clock, Theme toggle */}
-      <div className="flex items-center gap-4">
-        {/* Live NYSE Status Badge */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-          <span>NYSE LIVE (PAPER)</span>
+      {/* Right Controls: Market Status, UTC clock */}
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Live NYSE Status */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#0c0c0c] border border-[#1a1a1a] text-xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#00B386]" />
+          <span className="text-slate-300 font-medium">NYSE</span>
+          <span className="text-[10px] text-[#00B386] font-semibold">PAPER</span>
         </div>
 
-        {/* UTC Clock */}
-        <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground font-mono">
-          <Clock className="h-3.5 w-3.5" />
-          <span>{timeStr || "15:21:32 UTC"}</span>
+        {/* Live UTC Clock */}
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#0c0c0c] border border-[#1a1a1a] text-xs text-slate-400">
+          <Clock className="h-3 w-3 text-slate-500" />
+          <span className="tabular-nums">{timeStr || "16:45:00 UTC"}</span>
         </div>
-
-        {/* Theme Toggle */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleTheme}
-          title="Toggle light/dark theme"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-        >
-          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
       </div>
     </header>
   );

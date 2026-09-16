@@ -43,19 +43,25 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        profit: {
-          DEFAULT: "#10b981",
-          glow: "rgba(16, 185, 129, 0.15)",
+        gain: {
+          DEFAULT: "#00B386",
+          soft: "rgba(0, 179, 134, 0.12)",
         },
         loss: {
-          DEFAULT: "#f43f5e",
-          glow: "rgba(244, 63, 94, 0.15)",
+          DEFAULT: "#EB5757",
+          soft: "rgba(235, 87, 87, 0.12)",
+        },
+        surface: {
+          DEFAULT: "#0F0F0F",
+          hover: "#141414",
+          subtle: "#181818",
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        DEFAULT: "4px",
+        sm: "2px",
+        md: "4px",
+        lg: "6px",
       },
     },
   },

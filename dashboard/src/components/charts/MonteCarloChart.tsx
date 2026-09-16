@@ -10,6 +10,7 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  CartesianGrid,
 } from "recharts";
 import { MonteCarloBand } from "@/types";
 
@@ -26,21 +27,22 @@ export function MonteCarloChart({ data, height = 260 }: MonteCarloChartProps) {
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="mcGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.02} />
+            <linearGradient id="mcGradZerodha" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#00B386" stopOpacity={0.12} />
+              <stop offset="95%" stopColor="#00B386" stopOpacity={0.01} />
             </linearGradient>
           </defs>
+          <CartesianGrid strokeDasharray="2 2" stroke="#161616" vertical={false} />
           <XAxis
             dataKey="day"
-            stroke="#64748b"
+            stroke="#555555"
             fontSize={10}
             tickLine={false}
-            axisLine={{ stroke: "rgba(51, 65, 85, 0.4)" }}
+            axisLine={{ stroke: "#1F1F1F" }}
           />
           <YAxis
             domain={["auto", "auto"]}
-            stroke="#94a3b8"
+            stroke="#555555"
             fontSize={10}
             tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
             tickLine={false}
@@ -48,10 +50,12 @@ export function MonteCarloChart({ data, height = 260 }: MonteCarloChartProps) {
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#0f172a",
-              borderColor: "rgba(51, 65, 85, 0.8)",
-              borderRadius: "8px",
-              fontSize: "12px",
+              backgroundColor: "#0C0C0C",
+              borderColor: "#1F1F1F",
+              borderRadius: "4px",
+              fontSize: "11px",
+              color: "#FAFAFA",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.8)",
             }}
             formatter={(v: any) => [`$${Number(v).toLocaleString()}`, ""]}
           />
@@ -59,24 +63,24 @@ export function MonteCarloChart({ data, height = 260 }: MonteCarloChartProps) {
           <Area
             type="monotone"
             dataKey="p95"
-            name="95th Percentile (Bullish)"
-            stroke="#06b6d4"
+            name="95th Pct (Bullish)"
+            stroke="#444444"
             strokeDasharray="2 2"
-            fill="url(#mcGrad)"
+            fill="url(#mcGradZerodha)"
           />
           <Line
             type="monotone"
             dataKey="p50"
-            name="50th Percentile (Median)"
-            stroke="#10b981"
-            strokeWidth={2}
+            name="50th Pct (Median)"
+            stroke="#00B386"
+            strokeWidth={1.5}
             dot={false}
           />
           <Area
             type="monotone"
             dataKey="p5"
-            name="5th Percentile (Stress)"
-            stroke="#f43f5e"
+            name="5th Pct (Stress Boundary)"
+            stroke="#EB5757"
             strokeDasharray="2 2"
             fill="transparent"
           />
