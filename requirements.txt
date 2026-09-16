@@ -49,7 +49,9 @@ shap>=0.45,<1
 matplotlib>=3.9,<4
 plotly>=5.22,<6
 
-# --- Dashboard ---
+# --- Dashboard & API ---
+fastapi>=0.110.0
+uvicorn>=0.28.0
 streamlit>=1.36,<2
 
 # --- Config & Utilities ---
