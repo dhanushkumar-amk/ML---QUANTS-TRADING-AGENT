@@ -328,9 +328,7 @@ class BacktestEngine:
                 peak_equity = current_equity
 
             # 2. Daily reset for risk engine
-            if i > 0 and (
-                getattr(dt, "date", None) != getattr(dates[i - 1], "date", None)
-            ):
+            if i > 0 and (getattr(dt, "date", None) != getattr(dates[i - 1], "date", None)):
                 day_start_equity = current_equity
 
             # 3. Portfolio state for RiskEngine evaluation
@@ -424,7 +422,11 @@ class BacktestEngine:
                 )
 
                 # Update cash and shares
-                execution_price = p + (slip / approved_shares) if executed_diff > 0 else p - (slip / approved_shares)
+                execution_price = (
+                    p + (slip / approved_shares)
+                    if executed_diff > 0
+                    else p - (slip / approved_shares)
+                )
                 current_cash -= (executed_diff * execution_price) + comm
                 bar_comm += comm
                 bar_slip += slip
@@ -444,8 +446,16 @@ class BacktestEngine:
                     ):
                         closed_qty = min(ot["quantity"], abs(executed_diff))
                         side_mult = 1.0 if ot["side"] == "LONG" else -1.0
-                        trade_pnl = closed_qty * (execution_price - ot["entry_price"]) * side_mult - comm - slip
-                        trade_pnl_pct = (trade_pnl / (closed_qty * ot["entry_price"])) if ot["entry_price"] > 0 else 0.0
+                        trade_pnl = (
+                            closed_qty * (execution_price - ot["entry_price"]) * side_mult
+                            - comm
+                            - slip
+                        )
+                        trade_pnl_pct = (
+                            (trade_pnl / (closed_qty * ot["entry_price"]))
+                            if ot["entry_price"] > 0
+                            else 0.0
+                        )
 
                         entry_idx = dates.get_loc(ot["entry_date"])
                         curr_idx = i

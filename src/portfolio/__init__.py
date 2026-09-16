@@ -93,4 +93,3 @@ __all__ = [
     "DecisionStatus",
     "RiskRule",
 ]
-

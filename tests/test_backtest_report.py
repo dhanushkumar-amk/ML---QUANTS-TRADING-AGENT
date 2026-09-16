@@ -156,7 +156,9 @@ def test_benchmark_metrics():
     assert "beta" in metrics
 
 
-def test_generate_tearsheet_and_html_export(synthetic_equity_and_returns, synthetic_trades, tmp_path):
+def test_generate_tearsheet_and_html_export(
+    synthetic_equity_and_returns, synthetic_trades, tmp_path
+):
     """Test end-to-end tearsheet generation and standalone HTML output."""
     equity, returns = synthetic_equity_and_returns
     dates = equity.index

@@ -241,7 +241,9 @@ def compute_trade_statistics(trades: list[dict[str, Any]]) -> dict[str, Any]:
 
     gross_win = sum(wins)
     gross_loss = abs(sum(losses))
-    profit_factor = (gross_win / gross_loss) if gross_loss > 0 else (gross_win if gross_win > 0 else 1.0)
+    profit_factor = (
+        (gross_win / gross_loss) if gross_loss > 0 else (gross_win if gross_win > 0 else 1.0)
+    )
 
     avg_win = np.mean(wins) if wins else 0.0
     avg_loss = np.mean(losses) if losses else 0.0
@@ -360,7 +362,14 @@ def plot_benchmark_comparison(
     norm_s = (strategy_equity / strategy_equity.iloc[0]) * 100.0
     norm_b = (benchmark_equity / benchmark_equity.iloc[0]) * 100.0
     ax.plot(norm_s.index, norm_s.values, label="Strategy", color="#00E5FF", linewidth=2.0)
-    ax.plot(norm_b.index, norm_b.values, label="SPY Benchmark", color="#FFD600", linestyle="--", linewidth=1.8)
+    ax.plot(
+        norm_b.index,
+        norm_b.values,
+        label="SPY Benchmark",
+        color="#FFD600",
+        linestyle="--",
+        linewidth=1.8,
+    )
     ax.set_title(title, fontsize=13, fontweight="bold")
     ax.set_ylabel("Normalized Growth (Base 100)", fontsize=10)
     ax.set_xlabel("Date", fontsize=10)
@@ -387,12 +396,16 @@ def plot_rolling_metrics(
     ax1.legend(loc="upper left")
 
     # Rolling Volatility
-    ax2.plot(rolling_df.index, rolling_df["rolling_volatility"] * 100.0, color="#FF9100", linewidth=1.8)
+    ax2.plot(
+        rolling_df.index, rolling_df["rolling_volatility"] * 100.0, color="#FF9100", linewidth=1.8
+    )
     ax2.set_ylabel("Annualized Vol (%)", fontsize=10)
     ax2.grid(True, linestyle=":", alpha=0.6)
 
     # Rolling Win Rate
-    ax3.plot(rolling_df.index, rolling_df["rolling_win_rate"] * 100.0, color="#2979FF", linewidth=1.8)
+    ax3.plot(
+        rolling_df.index, rolling_df["rolling_win_rate"] * 100.0, color="#2979FF", linewidth=1.8
+    )
     ax3.axhline(50.0, color="gray", linestyle="--", alpha=0.7, label="50% Benchmark")
     ax3.set_ylabel("Daily Win Rate (%)", fontsize=10)
     ax3.set_xlabel("Date", fontsize=10)
@@ -403,7 +416,9 @@ def plot_rolling_metrics(
     return fig
 
 
-def plot_trade_analysis(trades: list[dict[str, Any]], title: str = "Trade PnL Distribution") -> plt.Figure:
+def plot_trade_analysis(
+    trades: list[dict[str, Any]], title: str = "Trade PnL Distribution"
+) -> plt.Figure:
     """Plot distribution of trade returns and holding period relationship."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
@@ -432,7 +447,9 @@ def plot_trade_analysis(trades: list[dict[str, Any]], title: str = "Trade PnL Di
     return fig
 
 
-def plot_underwater_chart(equity: pd.Series, title: str = "Isolated Underwater Drawdown Plot") -> plt.Figure:
+def plot_underwater_chart(
+    equity: pd.Series, title: str = "Isolated Underwater Drawdown Plot"
+) -> plt.Figure:
     """Plot dedicated underwater drawdown plot to highlight recovery duration."""
     fig, ax = plt.subplots(figsize=(12, 4))
     dd = compute_drawdown_series(equity) * 100.0
@@ -834,10 +851,18 @@ def generate_tearsheet(
     fig_underwater_b64 = figure_to_base64(fig_underwater)
 
     # Recreate figures for in-notebook rendering return
-    fig_equity_display = plot_equity_and_drawdown(equity, b_equity, title=f"{title} — Equity & Drawdown")
-    fig_rolling_display = plot_rolling_metrics(rolling_df, title=f"{title} — Rolling Risk & Stability")
-    fig_trades_display = plot_trade_analysis(trades, title="Trade PnL Distribution & Holding Duration")
-    fig_underwater_display = plot_underwater_chart(equity, title=f"{title} — Isolated Underwater Profile")
+    fig_equity_display = plot_equity_and_drawdown(
+        equity, b_equity, title=f"{title} — Equity & Drawdown"
+    )
+    fig_rolling_display = plot_rolling_metrics(
+        rolling_df, title=f"{title} — Rolling Risk & Stability"
+    )
+    fig_trades_display = plot_trade_analysis(
+        trades, title="Trade PnL Distribution & Holding Duration"
+    )
+    fig_underwater_display = plot_underwater_chart(
+        equity, title=f"{title} — Isolated Underwater Profile"
+    )
 
     html_content = generate_html_report(
         summary_metrics=summary_metrics,

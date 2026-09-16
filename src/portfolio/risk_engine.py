@@ -280,7 +280,6 @@ class RiskEngine:
 
         return False
 
-
     def compute_volatility_derisk_multiplier(
         self,
         forecast_vol: float,
@@ -513,9 +512,7 @@ class RiskEngine:
                 return decision
 
             rule_triggered = RiskRule.GROSS_EXPOSURE_LIMIT
-            reasons.append(
-                f"Gross exposure limit: Resized to {allowed_qty_gross:.2f} shares."
-            )
+            reasons.append(f"Gross exposure limit: Resized to {allowed_qty_gross:.2f} shares.")
             approved_qty = min(approved_qty, allowed_qty_gross)
 
         # 4d. Net Exposure Cap
@@ -582,10 +579,15 @@ class RiskEngine:
             decisions.append(decision)
 
             # Update running portfolio positions if approved or resized
-            if decision.status in (DecisionStatus.APPROVED, DecisionStatus.RESIZED) and decision.approved_quantity > 0:
+            if (
+                decision.status in (DecisionStatus.APPROVED, DecisionStatus.RESIZED)
+                and decision.approved_quantity > 0
+            ):
                 direction = 1.0 if _normalize_action(intent.action) == "BUY" else -1.0
                 curr_pos = running_portfolio.positions.get(intent.ticker, 0.0)
-                running_portfolio.positions[intent.ticker] = curr_pos + (direction * decision.approved_dollar_value)
+                running_portfolio.positions[intent.ticker] = curr_pos + (
+                    direction * decision.approved_dollar_value
+                )
 
         return decisions
 

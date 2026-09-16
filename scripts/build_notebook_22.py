@@ -68,7 +68,9 @@ def build_and_run():
             price_dict[t] = df["close"]
 
     prices_df = pd.DataFrame(price_dict).dropna()
-    print(f"Loaded synchronized daily price bars: {prices_df.shape} ({prices_df.index[0].date()} to {prices_df.index[-1].date()})")
+    print(
+        f"Loaded synchronized daily price bars: {prices_df.shape} ({prices_df.index[0].date()} to {prices_df.index[-1].date()})"
+    )
 
     # -----------------------------------------------------------------
     # 1. Strategy Signal Generation (Multi-Asset Momentum / Trend Model)
@@ -131,9 +133,13 @@ def build_and_run():
     )
 
     # Save figures to disk
-    tearsheet["figures"]["equity_and_drawdown"].savefig(figures_dir / "equity_drawdown.png", dpi=150)
+    tearsheet["figures"]["equity_and_drawdown"].savefig(
+        figures_dir / "equity_drawdown.png", dpi=150
+    )
     tearsheet["figures"]["rolling_metrics"].savefig(figures_dir / "rolling_metrics.png", dpi=150)
-    tearsheet["figures"]["underwater_chart"].savefig(figures_dir / "underwater_drawdown.png", dpi=150)
+    tearsheet["figures"]["underwater_chart"].savefig(
+        figures_dir / "underwater_drawdown.png", dpi=150
+    )
     tearsheet["figures"]["trade_analysis"].savefig(figures_dir / "trade_analysis.png", dpi=150)
     print(f"Saved standalone HTML tearsheet to: {html_report_path}")
 
@@ -202,7 +208,10 @@ def build_and_run():
         risk_engine=risk_engine,
         base_portfolio_equity=100000.0,
         tickers=("AAPL", "MSFT"),
-        prices={"AAPL": float(prices_df["AAPL"].iloc[-1]), "MSFT": float(prices_df["MSFT"].iloc[-1])},
+        prices={
+            "AAPL": float(prices_df["AAPL"].iloc[-1]),
+            "MSFT": float(prices_df["MSFT"].iloc[-1]),
+        },
     )
     scenario_table = pd.DataFrame([s.summary_dict() for s in scenarios.values()])
     print(scenario_table.to_string(index=False))
@@ -244,7 +253,7 @@ def build_and_run():
                 "3. **Regime-Conditional Performance Breakdown**:\n",
                 "   - Segmenting returns across Phase 16 Gaussian HMM states (Low-Vol Bull, Medium-Vol Transition, High-Vol Crisis) to measure structural regime resilience.\n",
                 "4. **Synthetic Scenario Shocks on Phase 39 RiskEngine**:\n",
-                "   - Overnight volatility doubling (+100% vol spike) and flash gap-down (-10% crash) to verify active risk intervention."
+                "   - Overnight volatility doubling (+100% vol spike) and flash gap-down (-10% crash) to verify active risk intervention.",
             ],
         }
     )
@@ -259,9 +268,7 @@ def build_and_run():
                 {
                     "name": "stdout",
                     "output_type": "stream",
-                    "text": [
-                        "Environment and backtest packages initialized successfully.\n"
-                    ],
+                    "text": ["Environment and backtest packages initialized successfully.\n"],
                 }
             ],
             "source": [
@@ -284,7 +291,7 @@ def build_and_run():
                 "figures_dir = reports_dir / 'figures'\n",
                 "reports_dir.mkdir(parents=True, exist_ok=True)\n",
                 "figures_dir.mkdir(parents=True, exist_ok=True)\n",
-                "print('Environment and backtest packages initialized successfully.')"
+                "print('Environment and backtest packages initialized successfully.')",
             ],
         }
     )
@@ -311,7 +318,7 @@ def build_and_run():
                         f"Completed Trades: {summary['total_trades']}\n",
                         f"Win Rate: {summary['win_rate_pct']}%\n",
                         f"Profit Factor: {summary['profit_factor']}\n",
-                        f"Avg Holding Period: {summary['avg_holding_period_days']} days\n"
+                        f"Avg Holding Period: {summary['avg_holding_period_days']} days\n",
                     ],
                 }
             ],
@@ -351,7 +358,7 @@ def build_and_run():
                 "\n",
                 "summary = backtest_res.summary_dict()\n",
                 "for k, v in summary.items():\n",
-                "    print(f'{k}: {v}')"
+                "    print(f'{k}: {v}')",
             ],
         }
     )
@@ -371,7 +378,7 @@ def build_and_run():
                         f"Benchmark Alpha (annualized): {tearsheet['benchmark_metrics']['alpha_annualized_pct']}%\n",
                         f"Market Beta: {tearsheet['benchmark_metrics']['beta']}\n",
                         f"Information Ratio: {tearsheet['benchmark_metrics']['information_ratio']}\n",
-                        f"Tracking Error: {tearsheet['benchmark_metrics']['tracking_error_pct']}%\n"
+                        f"Tracking Error: {tearsheet['benchmark_metrics']['tracking_error_pct']}%\n",
                     ],
                 }
             ],
@@ -386,7 +393,7 @@ def build_and_run():
                 ")\n",
                 "print(f'Standalone HTML Tearsheet generated at: {html_report_path}')\n",
                 "for k, v in tearsheet['benchmark_metrics'].items():\n",
-                "    print(f'{k}: {v}')"
+                "    print(f'{k}: {v}')",
             ],
         }
     )
@@ -401,9 +408,7 @@ def build_and_run():
                 {
                     "name": "stdout",
                     "output_type": "stream",
-                    "text": [
-                        crisis_table.to_string(index=False) + "\n"
-                    ],
+                    "text": [crisis_table.to_string(index=False) + "\n"],
                 }
             ],
             "source": [
@@ -414,7 +419,7 @@ def build_and_run():
                 ")\n",
                 "crisis_table = pd.DataFrame([c.to_dict() for c in crisis_eval.values()])\n",
                 "print('=== Historical Crisis Period Performance Replay ===')\n",
-                "print(crisis_table.to_string(index=False))"
+                "print(crisis_table.to_string(index=False))",
             ],
         }
     )
@@ -437,7 +442,7 @@ def build_and_run():
                         f"  5th Percentile Max Drawdown (Severe): {mc_summary['max_drawdown_5th_pct']}%\n",
                         f"  50th Percentile Max Drawdown:         {mc_summary['max_drawdown_50th_pct']}%\n",
                         f"  95th Percentile Max Drawdown (Mild):  {mc_summary['max_drawdown_95th_pct']}%\n",
-                        "Saved Monte Carlo fan chart to: reports/figures/monte_carlo_simulation.png\n"
+                        "Saved Monte Carlo fan chart to: reports/figures/monte_carlo_simulation.png\n",
                     ],
                 }
             ],
@@ -457,7 +462,7 @@ def build_and_run():
                 "plt.close(fig_mc)\n",
                 "\n",
                 "for k, v in mc_summary.items():\n",
-                "    print(f'{k}: {v}')"
+                "    print(f'{k}: {v}')",
             ],
         }
     )
@@ -472,9 +477,7 @@ def build_and_run():
                 {
                     "name": "stdout",
                     "output_type": "stream",
-                    "text": [
-                        regime_table.to_string(index=False) + "\n"
-                    ],
+                    "text": [regime_table.to_string(index=False) + "\n"],
                 }
             ],
             "source": [
@@ -492,7 +495,7 @@ def build_and_run():
                 "    },\n",
                 ")\n",
                 "print('=== Regime-Conditional Performance Breakdown ===')\n",
-                "print(regime_table.to_string(index=False))"
+                "print(regime_table.to_string(index=False))",
             ],
         }
     )
@@ -507,9 +510,7 @@ def build_and_run():
                 {
                     "name": "stdout",
                     "output_type": "stream",
-                    "text": [
-                        scenario_table.to_string(index=False) + "\n"
-                    ],
+                    "text": [scenario_table.to_string(index=False) + "\n"],
                 }
             ],
             "source": [
@@ -522,7 +523,7 @@ def build_and_run():
                 ")\n",
                 "scenario_table = pd.DataFrame([s.summary_dict() for s in scenarios.values()])\n",
                 "print('=== Synthetic Shock Scenarios on RiskEngine ===')\n",
-                "print(scenario_table.to_string(index=False))"
+                "print(scenario_table.to_string(index=False))",
             ],
         }
     )
@@ -557,7 +558,7 @@ def build_and_run():
                 "1. **Positive Alpha Over Benchmark**:\n",
                 "   - The strategy achieves positive annualized alpha against the SPY benchmark with a lower market beta (~0.62–0.70), demonstrating that dynamic cash allocation and short market hedging mitigate secular market drawdowns (such as the 2022 bear market).\n",
                 "2. **Active Risk Engine Supremacy**:\n",
-                "   - Every order intent is subject to the Phase 39 RiskEngine. As demonstrated in our scenario shock tests, volatility spikes trigger immediate GARCH-based position downsizing (`VOLATILITY_DERISKING`), and intra-day loss breaches trigger the circuit breaker (`DAILY_LOSS_LIMIT`), preventing rogue models or runaway losses from jeopardizing capital."
+                "   - Every order intent is subject to the Phase 39 RiskEngine. As demonstrated in our scenario shock tests, volatility spikes trigger immediate GARCH-based position downsizing (`VOLATILITY_DERISKING`), and intra-day loss breaches trigger the circuit breaker (`DAILY_LOSS_LIMIT`), preventing rogue models or runaway losses from jeopardizing capital.",
             ],
         }
     )

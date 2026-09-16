@@ -106,9 +106,7 @@ class CrisisPeriodResult:
                 else "N/A"
             ),
             "excess_return_pct": (
-                round(self.excess_return * 100, 2)
-                if self.excess_return is not None
-                else "N/A"
+                round(self.excess_return * 100, 2) if self.excess_return is not None else "N/A"
             ),
         }
 
@@ -147,15 +145,17 @@ def evaluate_crisis_periods(
         sub_returns = returns.loc[start_str:end_str]
 
         if len(sub_equity) < 5:
-            logger.warning("Period %s has insufficient data in backtest (%d bars). Skipping.", name, len(sub_equity))
+            logger.warning(
+                "Period %s has insufficient data in backtest (%d bars). Skipping.",
+                name,
+                len(sub_equity),
+            )
             continue
 
         n_bars = len(sub_equity)
         strat_tot_ret = float((sub_equity.iloc[-1] / sub_equity.iloc[0]) - 1.0)
         strat_ann_ret = (
-            float((1.0 + strat_tot_ret) ** (252.0 / n_bars) - 1.0)
-            if strat_tot_ret > -1.0
-            else -1.0
+            float((1.0 + strat_tot_ret) ** (252.0 / n_bars) - 1.0) if strat_tot_ret > -1.0 else -1.0
         )
         strat_max_dd = float(calculate_max_drawdown(sub_returns)[0])
         strat_sharpe = float(calculate_sharpe_ratio(sub_returns))
@@ -304,7 +304,10 @@ def run_monte_carlo_simulation(
 
     if method == "block":
         sim_rets = circular_block_bootstrap(
-            clean_rets, n_simulations=n_simulations, block_size=block_size, random_state=random_state
+            clean_rets,
+            n_simulations=n_simulations,
+            block_size=block_size,
+            random_state=random_state,
         )
     elif method == "iid":
         rng = np.random.default_rng(random_state)
@@ -367,10 +370,16 @@ def plot_monte_carlo_distribution(
 
     # Shaded confidence bands
     ax1.fill_between(x_axis, p5, p95, color="#00E5FF", alpha=0.15, label="5th–95th Percentile Band")
-    ax1.fill_between(x_axis, p25, p75, color="#00E5FF", alpha=0.30, label="25th–75th Percentile Band")
+    ax1.fill_between(
+        x_axis, p25, p75, color="#00E5FF", alpha=0.30, label="25th–75th Percentile Band"
+    )
     ax1.plot(x_axis, p50, color="#FFD600", linewidth=2.0, label="Median Path (50th %ile)")
-    ax1.plot(x_axis, p5, color="#FF5252", linestyle="--", linewidth=1.2, label="5th %ile (Adverse Tail)")
-    ax1.plot(x_axis, p95, color="#00E676", linestyle="--", linewidth=1.2, label="95th %ile (Bull Tail)")
+    ax1.plot(
+        x_axis, p5, color="#FF5252", linestyle="--", linewidth=1.2, label="5th %ile (Adverse Tail)"
+    )
+    ax1.plot(
+        x_axis, p95, color="#00E676", linestyle="--", linewidth=1.2, label="95th %ile (Bull Tail)"
+    )
 
     ax1.set_title(title, fontsize=12, fontweight="bold")
     ax1.set_ylabel("Portfolio Equity ($)", fontsize=10)
@@ -450,7 +459,9 @@ def analyze_regime_performance(
         pct_time = (n_bars / total_bars) * 100.0
 
         cum_ret = float((1.0 + sub).prod() - 1.0)
-        ann_ret = float((1.0 + cum_ret) ** (252.0 / max(1, n_bars)) - 1.0) if cum_ret > -1.0 else -1.0
+        ann_ret = (
+            float((1.0 + cum_ret) ** (252.0 / max(1, n_bars)) - 1.0) if cum_ret > -1.0 else -1.0
+        )
         ann_vol = float(sub.std() * np.sqrt(252.0))
         sharpe = float(calculate_sharpe_ratio(sub))
         sortino = float(calculate_sortino_ratio(sub))

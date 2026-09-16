@@ -67,8 +67,12 @@ def test_engle_granger_cointegration_detection(synthetic_pairs_data: pd.DataFram
     stat, p_val, crits, hedge_ratio, intercept = engle_granger_test(df["Y"], df["X"])
     assert p_val < 0.01, f"Expected p < 0.01 for cointegrated pair, got {p_val}"
     assert stat < crits["5%"], "ADF stat should be more negative than 5% critical value"
-    assert np.isclose(hedge_ratio, 1.8, atol=0.15), f"Estimated beta {hedge_ratio} should be close to 1.8"
-    assert np.isclose(intercept, 10.0, atol=3.0), f"Estimated alpha {intercept} should be close to 10.0"
+    assert np.isclose(
+        hedge_ratio, 1.8, atol=0.15
+    ), f"Estimated beta {hedge_ratio} should be close to 1.8"
+    assert np.isclose(
+        intercept, 10.0, atol=3.0
+    ), f"Estimated alpha {intercept} should be close to 10.0"
 
     # Test Z and X: independent random walks, should NOT be cointegrated (p > 0.05)
     stat_z, p_val_z, crits_z, _, _ = engle_granger_test(df["Z"], df["X"])
@@ -86,7 +90,9 @@ def test_johansen_cointegration_test(synthetic_pairs_data: pd.DataFrame):
 
     # Pair (Z, X)
     res_non_coint = johansen_test(df[["Z", "X"]])
-    assert not res_non_coint["is_cointegrated"], "Independent pair should not pass both Johansen tests"
+    assert not res_non_coint[
+        "is_cointegrated"
+    ], "Independent pair should not pass both Johansen tests"
 
 
 def test_screen_pairs_universe(synthetic_pairs_data: pd.DataFrame):
@@ -179,9 +185,7 @@ def test_backtest_pairs_strategy(synthetic_pairs_data: pd.DataFrame):
     """Test pairs backtesting execution, equity curve, trade log, and metrics."""
     df = synthetic_pairs_data
     rolling_hr = compute_rolling_hedge_ratio(df["Y"], df["X"], window=60)
-    spread = compute_spread(
-        df["Y"], df["X"], rolling_hr["hedge_ratio"], rolling_hr["intercept"]
-    )
+    spread = compute_spread(df["Y"], df["X"], rolling_hr["hedge_ratio"], rolling_hr["intercept"])
     zscore = compute_spread_zscore(spread, window=30)
     signals = generate_pairs_signals(zscore, entry_threshold=1.5, exit_threshold=0.0)
 
