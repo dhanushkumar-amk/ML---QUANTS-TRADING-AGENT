@@ -3,24 +3,38 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "next": "16.3.5",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "next": "^14.2.23",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lightweight-charts": "^4.2.1",
+    "recharts": "^2.13.3",
+    "lucide-react": "^0.454.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.4",
+    "class-variance-authority": "^0.7.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.5",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@types/node": "^20.17.10",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "tailwindcss": "^3.4.14",
+    "postcss": "^8.4.47",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.23",
+    "vitest": "^2.1.4",
+    "@vitejs/plugin-react": "^4.3.3",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "jsdom": "^25.0.1"
   }
 }

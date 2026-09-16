@@ -7,7 +7,6 @@ Validates JSON responses, status codes, and schema conformance across all 7 endp
 """
 
 from fastapi.testclient import TestClient
-import pytest
 
 from src.api.server import app
 

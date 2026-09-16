@@ -15,17 +15,15 @@ FastAPI REST API exposing:
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import json
-from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 import pandas as pd
+from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.data_pipeline.data_access import DataAccessLayer
-from src.execution.audit_trail import AuditTrail, audit_trail_summary
+from src.execution.audit_trail import AuditTrail
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -88,7 +86,7 @@ def get_overview() -> dict[str, Any]:
     drawdowns = (strat_curve - peaks) / peaks * 100.0
 
     equity_series = []
-    for d, s, b, dd in zip(base_date, strat_curve, bench_curve, drawdowns):
+    for d, s, b, dd in zip(base_date, strat_curve, bench_curve, drawdowns, strict=False):
         equity_series.append(
             {
                 "date": d.strftime("%Y-%m-%d"),
@@ -226,7 +224,11 @@ def get_chart_data(
     # Format for TradingView lightweight-charts
     bars = []
     for _, row in df.iterrows():
-        t_str = row["date"].strftime("%Y-%m-%d") if hasattr(row["date"], "strftime") else str(row["date"])[:10]
+        t_str = (
+            row["date"].strftime("%Y-%m-%d")
+            if hasattr(row["date"], "strftime")
+            else str(row["date"])[:10]
+        )
         bars.append(
             {
                 "time": t_str,
@@ -478,21 +480,31 @@ def get_audit_trail(
                 "event_type": "SYSTEM_EVENT",
                 "ticker": None,
                 "cycle_id": "cycle_002",
-                "details": {"action": "SHUTDOWN", "reason": "COMPLETED", "cancelled_open_orders": 2},
+                "details": {
+                    "action": "SHUTDOWN",
+                    "reason": "COMPLETED",
+                    "cancelled_open_orders": 2,
+                },
             },
             {
                 "timestamp": f"{today_str}T15:21:34.952Z",
                 "event_type": "ORDER_CANCELLED",
                 "ticker": "MSFT",
                 "cycle_id": "cycle_002",
-                "details": {"order_id": "8a220e03-3176-49c4-a028-5d8ad715c7d9", "reason": "SHUTDOWN_CLEANUP"},
+                "details": {
+                    "order_id": "8a220e03-3176-49c4-a028-5d8ad715c7d9",
+                    "reason": "SHUTDOWN_CLEANUP",
+                },
             },
             {
                 "timestamp": f"{today_str}T15:21:34.810Z",
                 "event_type": "ORDER_CANCELLED",
                 "ticker": "AAPL",
                 "cycle_id": "cycle_002",
-                "details": {"order_id": "10b464c9-a532-4af8-8f39-d3fa5b6524cf", "reason": "SHUTDOWN_CLEANUP"},
+                "details": {
+                    "order_id": "10b464c9-a532-4af8-8f39-d3fa5b6524cf",
+                    "reason": "SHUTDOWN_CLEANUP",
+                },
             },
             {
                 "timestamp": f"{today_str}T15:21:32.441Z",
@@ -506,7 +518,11 @@ def get_audit_trail(
                 "event_type": "RISK_DECISION",
                 "ticker": "MSFT",
                 "cycle_id": "cycle_001",
-                "details": {"status": "APPROVED", "approved_quantity": 59.14, "rule_triggered": "NONE"},
+                "details": {
+                    "status": "APPROVED",
+                    "approved_quantity": 59.14,
+                    "rule_triggered": "NONE",
+                },
             },
             {
                 "timestamp": f"{today_str}T15:21:32.180Z",
@@ -520,7 +536,11 @@ def get_audit_trail(
                 "event_type": "RISK_DECISION",
                 "ticker": "AAPL",
                 "cycle_id": "cycle_001",
-                "details": {"status": "APPROVED", "approved_quantity": 94.68, "rule_triggered": "NONE"},
+                "details": {
+                    "status": "APPROVED",
+                    "approved_quantity": 94.68,
+                    "rule_triggered": "NONE",
+                },
             },
             {
                 "timestamp": f"{today_str}T15:21:31.910Z",
