@@ -1,0 +1,19 @@
+date,ticker_added,name_added,ticker_removed,name_removed,reason
+2015-03-23,O,Realty Income Corp.,AVP,Avon Products Inc.,Market capitalization changes
+2015-05-08,AAL,American Airlines Group Inc.,ESV,Ensco plc,Market capitalization changes
+2015-07-02,JBHT,J.B. Hunt Transport Services,BMS,Bemis Company,Market capitalization changes
+2016-09-06,CHTR,Charter Communications,EMC,EMC Corporation,Acquired by Dell Inc.
+2017-06-19,AABA,Altaba Inc.,YHOO,Yahoo! Inc.,Operating assets acquired by Verizon Communications
+2017-08-28,IT,Gartner Inc.,WFM,Whole Foods Market Inc.,Acquired by Amazon.com Inc.
+2017-09-01,DWDP,DowDuPont Inc.,DOW,The Dow Chemical Company,Merger with E.I. du Pont de Nemours
+2018-06-07,TWTR,Twitter Inc.,MON,Monsanto Company,Acquired by Bayer AG
+2018-11-27,KEYS,Keysight Technologies,COL,Rockwell Collins Inc.,Acquired by United Technologies
+2019-11-20,NOW,ServiceNow Inc.,CELG,Celgene Corporation,Acquired by Bristol-Myers Squibb
+2020-05-08,DXCM,DexCom Inc.,AGN,Allergan plc,Acquired by AbbVie Inc.
+2020-12-21,TSLA,Tesla Inc.,AIV,Apartment Investment & Management,S&P 500 quarterly rebalance
+2021-01-07,ENPH,Enphase Energy Inc.,TIF,Tiffany & Co.,Acquired by LVMH
+2021-07-21,MRNA,Moderna Inc.,ALXN,Alexion Pharmaceuticals Inc.,Acquired by AstraZeneca
+2022-02-14,NDSN,Nordson Corporation,XLNX,Xilinx Inc.,Acquired by Advanced Micro Devices
+2022-10-28,ARCH,Arch Capital Group,TWTR,Twitter Inc.,Acquired and privatized by Elon Musk (X Corp)
+2023-03-15,INSM,Insmed Inc.,SIVB,SVB Financial Group,FDIC receivership
+2023-05-03,AXON,Axon Enterprise Inc.,FRC,First Republic Bank,FDIC receivership / acquired by JPMorgan Chase

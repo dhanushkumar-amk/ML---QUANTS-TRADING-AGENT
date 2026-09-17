@@ -25,6 +25,7 @@ COPY configs/ ./configs/
 COPY src/ ./src/
 COPY models/ ./models/
 COPY scripts/ ./scripts/
+COPY data/universe/ ./data/universe/
 
 # Ensure start script has execute permissions
 RUN chmod +x /app/scripts/*.sh || true

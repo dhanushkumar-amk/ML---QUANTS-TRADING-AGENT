@@ -1,0 +1,31 @@
+ticker,name,sector
+AAPL,Apple Inc.,Information Technology
+MSFT,Microsoft Corporation,Information Technology
+GOOGL,Alphabet Inc. Class A,Communication Services
+AMZN,Amazon.com Inc.,Consumer Discretionary
+NVDA,NVIDIA Corporation,Information Technology
+META,Meta Platforms Inc.,Communication Services
+TSLA,Tesla Inc.,Consumer Discretionary
+BRK.B,Berkshire Hathaway Inc.,Financials
+JPM,JPMorgan Chase & Co.,Financials
+JNJ,Johnson & Johnson,Health Care
+V,Visa Inc.,Financials
+PG,Procter & Gamble Co.,Consumer Staples
+XOM,Exxon Mobil Corporation,Energy
+UNH,UnitedHealth Group Inc.,Health Care
+MA,Mastercard Inc.,Financials
+HD,Home Depot Inc.,Consumer Discretionary
+DIS,Walt Disney Co.,Communication Services
+NOW,ServiceNow Inc.,Information Technology
+MRNA,Moderna Inc.,Health Care
+ENPH,Enphase Energy Inc.,Information Technology
+DXCM,DexCom Inc.,Health Care
+AXON,Axon Enterprise Inc.,Industrials
+ARCH,Arch Capital Group,Financials
+NDSN,Nordson Corporation,Industrials
+KEYS,Keysight Technologies,Information Technology
+IT,Gartner Inc.,Information Technology
+O,Realty Income Corp.,Real Estate
+AAL,American Airlines Group Inc.,Industrials
+JBHT,J.B. Hunt Transport Services,Industrials
+CHTR,Charter Communications,Communication Services

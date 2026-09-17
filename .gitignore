@@ -38,6 +38,7 @@ data/raw/
 data/processed/
 data/external/
 *.csv
+!data/universe/*.csv
 *.parquet
 *.h5
 *.hdf5
