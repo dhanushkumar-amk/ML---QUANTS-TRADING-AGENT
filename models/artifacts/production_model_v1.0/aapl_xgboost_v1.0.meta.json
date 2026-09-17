@@ -1,0 +1,61 @@
+{
+  "model_name": "AAPL_production_xgboost",
+  "version": "v1.0",
+  "ticker": "AAPL",
+  "created_at": "2026-09-14T09:53:51.724504+00:00",
+  "model_type": "GradientBoostingModel (XGBoost)",
+  "features": [
+    "ret_1d",
+    "ret_5d",
+    "ret_20d",
+    "vol_20d",
+    "rsi_14",
+    "macd_line",
+    "macd_signal",
+    "natr_14",
+    "volume_ratio_20",
+    "news_headline_volume",
+    "news_sentiment_volatility"
+  ],
+  "feature_count": 11,
+  "production_quant_features": [
+    "ret_1d",
+    "ret_5d",
+    "ret_20d",
+    "vol_20d",
+    "rsi_14",
+    "macd_line",
+    "macd_signal",
+    "natr_14",
+    "volume_ratio_20"
+  ],
+  "production_sentiment_features": [
+    "news_headline_volume",
+    "news_sentiment_volatility"
+  ],
+  "excluded_features": {
+    "news_mean_sentiment": "Phase 33 Walk-Forward DM test p=0.58; zero incremental Sharpe in mega-caps where headline news is priced in milliseconds by HFT participants.",
+    "earnings_overall_sentiment": "Quarterly publication is too sparse to produce continuous alpha; bootstrap Sharpe 95% CI spanned zero across all tested walk-forward folds.",
+    "earnings_prepared_sentiment": "Scripted and sanitized by IR and corporate legal counsel; exhibits zero correlation with post-earnings announcement drift.",
+    "earnings_qa_sentiment": "High variance across single quarters; redundant with realized volatility jumps around earnings dates.",
+    "earnings_qa_vs_prepared_delta": "Sparse single-stock signal that fails to generalize to index ETFs (SPY) and degrades cross-asset model stability.",
+    "earnings_linguistic_uncertainty": "Highly collinear with realized volatility (vol_20d) and ATR (VIF > 8.0); adds redundant variance without incremental information."
+  },
+  "validation_protocol": "5-fold walk-forward with 5-bar embargo",
+  "validation_metrics": {
+    "evaluated_bars": 260,
+    "accuracy": 0.5538,
+    "brier_score": 0.2492,
+    "sharpe_ratio": 1.7568,
+    "cumulative_return": 0.0,
+    "max_drawdown": -0.125,
+    "win_rate": 0.5581
+  },
+  "model_file": "aapl_xgboost_v1.0.json",
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "random_state": 42
+  }
+}

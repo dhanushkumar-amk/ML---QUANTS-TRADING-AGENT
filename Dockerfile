@@ -29,8 +29,8 @@ COPY scripts/ ./scripts/
 # Ensure start script has execute permissions
 RUN chmod +x /app/scripts/*.sh || true
 
-# Create persistent runtime data and logging directories
-RUN mkdir -p /app/logs/audit /app/data
+# Create persistent runtime data, models, and logging directories
+RUN mkdir -p /app/logs/audit /app/data /app/models
 
 # Create non-root unprivileged service account
 RUN useradd -m -u 1000 trader && \

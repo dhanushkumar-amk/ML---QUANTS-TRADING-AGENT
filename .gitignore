@@ -46,7 +46,7 @@ data/external/
 *.pickle
 
 # --- Model Artifacts ---
-/models/
+# Individual heavy binaries ignored; JSON models & directories preserved
 *.pt
 *.pth
 *.onnx

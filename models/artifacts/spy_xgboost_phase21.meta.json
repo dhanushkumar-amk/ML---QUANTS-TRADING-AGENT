@@ -1,0 +1,38 @@
+{
+  "model_id": "spy_xgboost_phase21",
+  "backend": "xgboost",
+  "task_type": "classification",
+  "saved_at": "2026-09-14T13:51:10.337976",
+  "training_date_range": {
+    "start": "2019-01-04",
+    "end": "2026-08-28"
+  },
+  "feature_names": [
+    "mom_252d",
+    "obv",
+    "vpin_proxy_20",
+    "bb_bandwidth_20_2",
+    "adl",
+    "mom_5d",
+    "mom_20d",
+    "mom_60d",
+    "cmf_20",
+    "parkinson_vol_20",
+    "garch_vol_annualized",
+    "volume_roc_10"
+  ],
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "early_stopping_rounds": 20,
+    "scale_pos_weight": 0.7956043956043956,
+    "best_iteration": 1,
+    "best_score": 0.6928149053382213
+  },
+  "metrics": {}
+}
