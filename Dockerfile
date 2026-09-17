@@ -24,6 +24,10 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
 COPY configs/ ./configs/
 COPY src/ ./src/
 COPY models/ ./models/
+COPY scripts/ ./scripts/
+
+# Ensure start script has execute permissions
+RUN chmod +x /app/scripts/*.sh || true
 
 # Create persistent runtime data and logging directories
 RUN mkdir -p /app/logs/audit /app/data
@@ -36,10 +40,8 @@ USER trader
 # Volume mounts for persistence
 VOLUME ["/app/logs", "/app/data"]
 
-# Healthcheck: validates python process is responsive and audit trail log updated
-HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
-    CMD python -c "import os, sys, glob; logs = glob.glob('/app/logs/audit/*_audit.jsonl'); sys.exit(0 if logs else 1)"
+EXPOSE 8000
 
-# Default entrypoint runs live trading loop
-ENTRYPOINT ["python", "-m", "src.execution.live_trading_loop"]
-CMD ["--symbols", "AAPL", "MSFT", "NVDA", "GOOGL", "--bar-interval", "60"]
+# Default entrypoint launches start_production.sh (starts FastAPI + optional background loop)
+CMD ["bash", "/app/scripts/start_production.sh"]
+

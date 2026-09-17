@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: quant-trading-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /docs
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: APCA_API_KEY_ID
+        sync: false
+      - key: APCA_API_SECRET_KEY
+        sync: false
+      - key: APCA_API_BASE_URL
+        value: https://paper-api.alpaca.markets
