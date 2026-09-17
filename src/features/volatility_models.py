@@ -37,15 +37,20 @@ from typing import Any, Literal
 import numpy as np
 import pandas as pd
 
-# Compatibility patch for arch under pandas >= 3.0
+# Compatibility patch for arch under pandas >= 3.0 vs pandas 2.x
+import inspect
 import pandas.util._decorators as _pud
 
 _orig_deprecate_kwarg = _pud.deprecate_kwarg
+_deprecate_params = list(inspect.signature(_orig_deprecate_kwarg).parameters.keys())
 
 
 def _compat_deprecate_kwarg(*args, **kwargs):
-    if len(args) >= 2 and isinstance(args[0], str):
-        return _orig_deprecate_kwarg(FutureWarning, *args, **kwargs)
+    # In pandas >= 3.0, the first parameter is 'klass' (e.g. FutureWarning).
+    # In pandas < 3.0, the first parameter is 'old_arg_name'.
+    if _deprecate_params and _deprecate_params[0] == "klass":
+        if len(args) >= 2 and isinstance(args[0], str):
+            return _orig_deprecate_kwarg(FutureWarning, *args, **kwargs)
     return _orig_deprecate_kwarg(*args, **kwargs)
 
 
